@@ -1,0 +1,21 @@
+{
+  "name": "travel-group-organizer",
+  "version": "1.0.0",
+  "description": "Travel Group Organizer",
+  "main": "index.js",
+  "workspaces": [
+    "travel-mobile",
+    "travel-web",
+    "travel-shared"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "concurrently \"npm --workspace=travel-web run dev\" \"npm --workspace=travel-mobile run web\"",
+    "lint": "npm run lint --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  },
+  "author": "Diyan Koravski",
+  "license": "ISC"
+}
