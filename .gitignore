@@ -15,6 +15,7 @@ out/
 web-build/
 .next/
 coverage/
+travel-shared/
 
 # Expo
 .expo/
