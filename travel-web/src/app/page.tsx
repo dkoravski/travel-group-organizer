@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 const features = [
   {
     title: "Travel Groups",
@@ -33,20 +31,6 @@ export default function Home() {
             Планирайте групови пътувания, канете приятели, управлявайте
             маршрути, всички организирани на едно място.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/login"
-              className="inline-flex h-12 items-center justify-center rounded-md bg-emerald-600 px-6 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-            >
-              Вход
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex h-12 items-center justify-center rounded-md border border-slate-300 bg-white px-6 text-base font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100"
-            >
-              Регистрация
-            </Link>
-          </div>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">

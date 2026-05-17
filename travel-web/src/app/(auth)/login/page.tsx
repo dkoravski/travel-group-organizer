@@ -2,7 +2,16 @@ import Link from "next/link";
 
 import { LoginForm } from "@/components/LoginForm";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams?: Promise<{
+    redirectTo?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const redirectTo = params?.redirectTo ?? "/";
+
   return (
     <section className="mx-auto flex min-h-[calc(100vh-145px)] w-full max-w-md flex-col justify-center px-4 py-12 sm:px-6">
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -15,7 +24,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <LoginForm />
+        <LoginForm redirectTo={redirectTo} />
 
         <p className="mt-6 text-center text-sm text-slate-600">
           Нямате профил?{" "}
