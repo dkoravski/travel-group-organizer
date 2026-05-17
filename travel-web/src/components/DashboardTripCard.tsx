@@ -6,6 +6,7 @@ export type DashboardTrip = {
   endDate: string;
   participantsCount: number;
   status: "upcoming" | "current";
+  isJoined?: boolean;
 };
 
 type DashboardTripCardProps = {
@@ -29,16 +30,21 @@ export function DashboardTripCard({ trip }: DashboardTripCardProps) {
     <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-slate-950">
-            {trip.title}
-          </h3>
+          <h3 className="text-lg font-semibold text-slate-950">{trip.title}</h3>
           <p className="mt-1 text-sm text-slate-600">{trip.destination}</p>
         </div>
-        <span
-          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
-        >
-          {statusLabel}
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
+          >
+            {statusLabel}
+          </span>
+          {trip.isJoined ? (
+            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+              присъединен
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <dl className="mt-5 grid gap-3 text-sm text-slate-600">

@@ -30,7 +30,7 @@ export async function getDashboardData(userId: number) {
 
   const [groups, upcomingTrips] = await Promise.all([
     getDashboardGroups(groupIds),
-    getDashboardTrips(groupIds, today),
+    getDashboardTrips(groupIds, today, userId),
   ]);
 
   return {
@@ -63,6 +63,7 @@ async function getDashboardGroups(groupIds: number[]): Promise<DashboardGroup[]>
 async function getDashboardTrips(
   groupIds: number[],
   today: string,
+  userId: number,
 ): Promise<DashboardTrip[]> {
   const rows = await db
     .select({
@@ -71,7 +72,13 @@ async function getDashboardTrips(
       destination: trips.destination,
       startDate: trips.startDate,
       endDate: trips.endDate,
-      participantsCount: count(tripParticipants.id),
+      participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
+      isJoined: sql<boolean>`exists (
+        select 1
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+      )`,
       status: sql<"upcoming" | "current">`
         case
           when ${trips.startDate} <= ${today} and ${trips.endDate} >= ${today}

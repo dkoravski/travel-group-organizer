@@ -7,8 +7,9 @@ import {
   leaveTripAction,
 } from "@/app/trips/actions";
 import { ShareTripButton } from "@/components/ShareTripButton";
+import { TripGuestsForm } from "@/components/TripGuestsForm";
 import { getCurrentUser } from "@/lib/auth";
-import { getTripDetails } from "@/services/tripService";
+import { getTripDetails, getTripParticipants } from "@/services/tripService";
 
 type TripPageProps = {
   params: Promise<{
@@ -35,6 +36,8 @@ export default async function TripPage({ params }: TripPageProps) {
   if (!trip || !trip.isGroupMember) {
     notFound();
   }
+
+  const participants = await getTripParticipants(tripId);
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -85,6 +88,49 @@ export default async function TripPage({ params }: TripPageProps) {
           </p>
         </section>
 
+        <section className="mt-8">
+          <h2 className="text-xl font-bold tracking-tight text-slate-950">Участници</h2>
+          <div className="mt-3 space-y-2">
+            {participants.length > 0 ? (
+              participants.map((p) => (
+                <div key={p.id} className="flex items-center justify-between gap-4 rounded-md bg-slate-50 p-3">
+                  <div>
+                    <div className="font-semibold text-slate-950">{p.name}</div>
+                    <div className="text-sm text-slate-600">{p.email}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-slate-950">
+                    {p.guestsCount > 0 ? (
+                      `+ ${p.guestsCount} ${p.guestsCount === 1 ? "приятел" : "приятели"}`
+                    ) : null}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-md bg-slate-50 p-4 text-sm text-slate-600">Все още няма участници.</div>
+            )}
+          </div>
+        </section>
+
+        {trip.isJoined ? (
+          <section className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
+            <h2 className="text-xl font-bold tracking-tight text-slate-950">
+              Добавени приятели
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Към вашето участие има добавени{" "}
+              <span className="font-semibold text-slate-950">
+                {trip.userGuestsCount}
+              </span>{" "}
+              приятели.
+            </p>
+
+            <TripGuestsForm
+              tripId={trip.id}
+              guestsCount={trip.userGuestsCount}
+            />
+          </section>
+        ) : null}
+
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           {trip.isJoined ? (
             <form action={leaveTripAction}>
@@ -97,8 +143,27 @@ export default async function TripPage({ params }: TripPageProps) {
               </button>
             </form>
           ) : (
-            <form action={joinTripAction}>
+            <form
+              action={joinTripAction}
+              className="flex flex-col gap-3 sm:flex-row sm:items-end"
+            >
               <input type="hidden" name="tripId" value={trip.id} />
+              <div className="sm:w-40">
+                <label
+                  htmlFor="joinGuestsCount"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Приятели
+                </label>
+                <input
+                  id="joinGuestsCount"
+                  name="guestsCount"
+                  type="number"
+                  min={0}
+                  defaultValue={0}
+                  className="mt-2 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
               <button
                 type="submit"
                 disabled={trip.canceled}

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -9,6 +9,7 @@ import {
   tripParticipants,
   trips,
 } from "@/db/schema";
+import { users } from "@/db/schema";
 
 type CreateTripInput = {
   groupId: number;
@@ -59,7 +60,7 @@ export async function getAllTrips(userId: number, onlyMyGroups = true) {
       canceled: trips.canceled,
       createdBy: trips.createdBy,
       groupName: travelGroups.name,
-      participantsCount: count(tripParticipants.id),
+      participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
       isJoined: sql<boolean>`exists (
         select 1
         from ${tripParticipants} user_participation
@@ -106,12 +107,19 @@ export async function getTripDetails(tripId: number, userId: number) {
       createdAt: trips.createdAt,
       updatedAt: trips.updatedAt,
       groupName: travelGroups.name,
-      participantsCount: count(tripParticipants.id),
+      participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
       isGroupMember: sql<boolean>`exists (
         select 1
         from ${groupMembers} user_membership
         where user_membership.group_id = ${trips.groupId}
           and user_membership.user_id = ${userId}
+      )`,
+      userGuestsCount: sql<number>`(
+        select coalesce(user_participation.guests_count, 0)
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+        limit 1
       )`,
       isJoined: sql<boolean>`exists (
         select 1
@@ -131,17 +139,33 @@ export async function getTripDetails(tripId: number, userId: number) {
     ? {
         ...trip,
         participantsCount: Number(trip.participantsCount),
+        userGuestsCount: trip.userGuestsCount ? Number(trip.userGuestsCount) : 0,
+      } : null;
       }
-    : null;
+
+export async function getTripParticipants(tripId: number) {
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      guestsCount: tripParticipants.guestsCount,
+    })
+    .from(tripParticipants)
+    .innerJoin(users, eq(users.id, tripParticipants.userId))
+    .where(eq(tripParticipants.tripId, tripId))
+    .orderBy(asc(users.name));
+
+  return rows.map((r) => ({ id: r.id, name: r.name, email: r.email, guestsCount: Number(r.guestsCount ?? 0) }));
 }
 
-export async function joinTrip(tripId: number, userId: number) {
+export async function joinTrip(tripId: number, userId: number, guestsCount = 0) {
   await db
     .insert(tripParticipants)
     .values({
       tripId,
       userId,
-      guestsCount: 0,
+      guestsCount: guestsCount ?? 0,
     })
     .onConflictDoNothing();
 }
@@ -149,6 +173,19 @@ export async function joinTrip(tripId: number, userId: number) {
 export async function leaveTrip(tripId: number, userId: number) {
   await db
     .delete(tripParticipants)
+    .where(
+      and(eq(tripParticipants.tripId, tripId), eq(tripParticipants.userId, userId)),
+    );
+}
+
+export async function updateTripGuests(
+  tripId: number,
+  userId: number,
+  guestsCount: number,
+) {
+  await db
+    .update(tripParticipants)
+    .set({ guestsCount })
     .where(
       and(eq(tripParticipants.tripId, tripId), eq(tripParticipants.userId, userId)),
     );

@@ -32,3 +32,19 @@ input[type="button"]:hover,
 input[type="submit"]:hover {
   cursor: pointer;
 }
+
+.trip-message {
+  animation: hide-trip-message 2s forwards;
+}
+
+@keyframes hide-trip-message {
+  0%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

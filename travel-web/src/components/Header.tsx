@@ -32,7 +32,7 @@ export async function Header() {
                 href="/dashboard"
                 className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
               >
-                Табло
+                Моето табло
               </Link>
               <div className="text-sm leading-tight text-slate-700">
                 <span className="block font-semibold text-slate-950">
