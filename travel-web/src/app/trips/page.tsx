@@ -22,11 +22,8 @@ export default async function TripsPage({
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <header className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-          Travel Group Organizer
-        </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-          Browse Trips
+          Разглеждане на пътувания
         </h1>
       </header>
 
@@ -61,21 +58,21 @@ export default async function TripsPage({
                     <p className="mt-1 text-sm text-slate-600">{trip.destination}</p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                    {trip.canceled ? 'canceled' : 'active'}
+                    {trip.canceled ? "отменено" : "активно"}
                   </span>
                 </div>
 
                 <dl className="mt-5 space-y-2 text-sm text-slate-600">
                   <div className="flex justify-between gap-4">
-                    <dt>Group</dt>
+                    <dt>Група</dt>
                     <dd className="font-medium text-slate-950">{trip.groupName}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt>Dates</dt>
+                    <dt>Дати</dt>
                     <dd className="font-medium text-slate-950">{trip.startDate} - {trip.endDate}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt>Participants</dt>
+                    <dt>Участници</dt>
                     <dd className="font-medium text-slate-950">{trip.participantsCount}</dd>
                   </div>
                 </dl>
@@ -84,7 +81,7 @@ export default async function TripsPage({
                   href={`/trips/${trip.id}`}
                   className="mt-5 flex h-10 w-full cursor-pointer items-center justify-center rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
                 >
-                  View Trip
+                  Виж пътуването
                 </Link>
               </article>
             ))}

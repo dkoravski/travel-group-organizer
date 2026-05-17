@@ -23,7 +23,7 @@ export async function createGroupAction(formData: FormData) {
   const visibility = getStringValue(formData, "visibility");
 
   if (!name) {
-    throw new Error("Group name is required.");
+    throw new Error("Името на групата е задължително.");
   }
 
   const group = await createTravelGroup({

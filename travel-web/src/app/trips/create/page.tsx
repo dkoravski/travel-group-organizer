@@ -17,10 +17,10 @@ export default async function CreateTripPage() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <header className="mb-8">
         <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-          Quick Action
+          Бързо действие
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-          Create Trip
+          Създаване на пътуване
         </h1>
       </header>
 
@@ -33,7 +33,7 @@ export default async function CreateTripPage() {
             htmlFor="groupId"
             className="block text-sm font-medium text-slate-700"
           >
-            Travel group
+            Туристическа група
           </label>
           <select
             id="groupId"
@@ -41,7 +41,7 @@ export default async function CreateTripPage() {
             required
             className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
           >
-            <option value="">Select group</option>
+            <option value="">Изберете група</option>
             {groups.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name}
@@ -55,14 +55,14 @@ export default async function CreateTripPage() {
             htmlFor="title"
             className="block text-sm font-medium text-slate-700"
           >
-            Title
+            Заглавие
           </label>
           <input
             id="title"
             name="title"
             required
             className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-            placeholder="Weekend in Thessaloniki"
+            placeholder="Уикенд в Солун"
           />
         </div>
 
@@ -71,14 +71,14 @@ export default async function CreateTripPage() {
             htmlFor="destination"
             className="block text-sm font-medium text-slate-700"
           >
-            Destination
+            Дестинация
           </label>
           <input
             id="destination"
             name="destination"
             required
             className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-            placeholder="Thessaloniki, Greece"
+            placeholder="Солун, Гърция"
           />
         </div>
 
@@ -87,7 +87,7 @@ export default async function CreateTripPage() {
             htmlFor="startDate"
             className="block text-sm font-medium text-slate-700"
           >
-            Start date
+            Начална дата
           </label>
           <input
             id="startDate"
@@ -103,7 +103,7 @@ export default async function CreateTripPage() {
             htmlFor="endDate"
             className="block text-sm font-medium text-slate-700"
           >
-            End date
+            Крайна дата
           </label>
           <input
             id="endDate"
@@ -119,7 +119,7 @@ export default async function CreateTripPage() {
             htmlFor="description"
             className="block text-sm font-medium text-slate-700"
           >
-            Description
+            Описание
           </label>
           <textarea
             id="description"
@@ -134,7 +134,7 @@ export default async function CreateTripPage() {
             htmlFor="meetingPoint"
             className="block text-sm font-medium text-slate-700"
           >
-            Meeting point
+            Място на среща
           </label>
           <input
             id="meetingPoint"
@@ -148,7 +148,7 @@ export default async function CreateTripPage() {
             htmlFor="capacity"
             className="block text-sm font-medium text-slate-700"
           >
-            Capacity
+            Капацитет
           </label>
           <input
             id="capacity"
@@ -164,7 +164,7 @@ export default async function CreateTripPage() {
             htmlFor="estimatedBudget"
             className="block text-sm font-medium text-slate-700"
           >
-            Estimated budget
+            Ориентировъчен бюджет
           </label>
           <input
             id="estimatedBudget"
@@ -181,7 +181,7 @@ export default async function CreateTripPage() {
             type="submit"
             className="h-11 rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
           >
-            Create Trip
+            Създай пътуване
           </button>
         </div>
       </form>

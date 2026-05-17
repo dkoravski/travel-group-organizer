@@ -14,10 +14,10 @@ export default async function CreateGroupPage() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <header className="mb-8">
         <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-          Quick Action
+          Бързо действие
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-          Create Group
+          Създаване на група
         </h1>
       </header>
 
@@ -27,14 +27,14 @@ export default async function CreateGroupPage() {
       >
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-slate-700">
-            Group name
+            Име на групата
           </label>
           <input
             id="name"
             name="name"
             required
             className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-            placeholder="Weekend Travelers"
+            placeholder="Уикенд пътешественици"
           />
         </div>
 
@@ -43,14 +43,14 @@ export default async function CreateGroupPage() {
             htmlFor="description"
             className="block text-sm font-medium text-slate-700"
           >
-            Description
+            Описание
           </label>
           <textarea
             id="description"
             name="description"
             rows={4}
             className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-            placeholder="Short description for the group"
+            placeholder="Кратко описание на групата"
           />
         </div>
 
@@ -59,7 +59,7 @@ export default async function CreateGroupPage() {
             htmlFor="imageUrl"
             className="block text-sm font-medium text-slate-700"
           >
-            Image URL
+            URL на изображение
           </label>
           <input
             id="imageUrl"
@@ -75,7 +75,7 @@ export default async function CreateGroupPage() {
             htmlFor="visibility"
             className="block text-sm font-medium text-slate-700"
           >
-            Visibility
+            Видимост
           </label>
           <select
             id="visibility"
@@ -83,8 +83,8 @@ export default async function CreateGroupPage() {
             defaultValue="private"
             className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
           >
-            <option value="private">Private</option>
-            <option value="public">Public</option>
+            <option value="private">Частна</option>
+            <option value="public">Публична</option>
           </select>
         </div>
 
@@ -92,7 +92,7 @@ export default async function CreateGroupPage() {
           type="submit"
           className="h-11 rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
         >
-          Create Group
+          Създай група
         </button>
       </form>
     </div>

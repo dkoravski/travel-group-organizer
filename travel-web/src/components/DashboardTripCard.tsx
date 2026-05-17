@@ -19,7 +19,7 @@ const dateFormatter = new Intl.DateTimeFormat("bg-BG", {
 });
 
 export function DashboardTripCard({ trip }: DashboardTripCardProps) {
-  const statusLabel = trip.status === "current" ? "current" : "upcoming";
+  const statusLabel = trip.status === "current" ? "в момента" : "предстоящо";
   const statusClass =
     trip.status === "current"
       ? "bg-sky-100 text-sky-800"

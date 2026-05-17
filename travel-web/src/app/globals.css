@@ -24,7 +24,7 @@ body {
   color: var(--foreground);
 }
 
-/* Show pointer cursor when hovering interactive buttons */
+/* Показва курсор при интерактивни бутони */
 button:hover,
 [role="button"]:hover,
 .btn:hover,

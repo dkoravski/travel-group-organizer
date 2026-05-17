@@ -52,7 +52,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
         href="/dashboard"
         className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
       >
-        Back to Dashboard
+        Назад към таблото
       </Link>
 
       <header className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -70,13 +70,13 @@ export default async function GroupPage({ params }: GroupPageProps) {
           </div>
           <div className="rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-600">
             <p>
-              Owner:{" "}
+              Организатор:{" "}
               <span className="font-semibold text-slate-950">
                 {group.ownerName}
               </span>
             </p>
             <p>
-              Members:{" "}
+              Участници:{" "}
               <span className="font-semibold text-slate-950">
                 {group.membersCount}
               </span>
@@ -94,7 +94,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
             id="members-heading"
             className="text-xl font-bold tracking-tight text-slate-950"
           >
-            Members
+            Участници
           </h2>
           <div className="mt-5 space-y-3">
             {members.map((member) => (
@@ -121,7 +121,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
             id="trips-heading"
             className="text-xl font-bold tracking-tight text-slate-950"
           >
-            Group Trips
+            Пътувания на групата
           </h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             {groupTrips.map((trip) => (
@@ -137,13 +137,13 @@ export default async function GroupPage({ params }: GroupPageProps) {
                 </p>
                 <dl className="mt-4 space-y-2 text-sm text-slate-600">
                   <div className="flex justify-between gap-4">
-                    <dt>Dates</dt>
+                    <dt>Дати</dt>
                     <dd className="font-medium text-slate-950">
                       {trip.startDate} - {trip.endDate}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt>Participants</dt>
+                    <dt>Участници</dt>
                     <dd className="font-medium text-slate-950">
                       {trip.participantsCount}
                     </dd>

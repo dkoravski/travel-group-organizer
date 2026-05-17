@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 const actions = [
-  { label: "Create Group", href: "/groups/create" },
-  { label: "Create Trip", href: "/trips/create" },
-  { label: "Browse Trips", href: "/trips" },
+  { label: "Създай група", href: "/groups/create" },
+  { label: "Създай пътуване", href: "/trips/create" },
+  { label: "Разгледай пътувания", href: "/trips" },
 ];
 
 export function DashboardQuickActions() {
@@ -16,7 +16,7 @@ export function DashboardQuickActions() {
         id="quick-actions-heading"
         className="text-xl font-bold tracking-tight text-slate-950"
       >
-        Quick Actions
+        Бързи действия
       </h2>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {actions.map((action) => (

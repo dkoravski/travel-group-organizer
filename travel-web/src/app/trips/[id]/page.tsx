@@ -42,7 +42,7 @@ export default async function TripPage({ params }: TripPageProps) {
         href="/trips"
         className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
       >
-        Back to Trips
+        Назад към пътуванията
       </Link>
 
       <article className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -54,28 +54,34 @@ export default async function TripPage({ params }: TripPageProps) {
             <p className="mt-2 text-lg text-slate-600">{trip.destination}</p>
           </div>
           <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
-            {trip.canceled ? "canceled" : "active"}
+            {trip.canceled ? "отменено" : "активно"}
           </span>
         </header>
 
         <dl className="mt-8 grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
-          <InfoRow label="Group" value={trip.groupName} />
-          <InfoRow label="Dates" value={`${trip.startDate} - ${trip.endDate}`} />
-          <InfoRow label="Participants" value={String(trip.participantsCount)} />
-          <InfoRow label="Capacity" value={trip.capacity?.toString() ?? "No limit"} />
+          <InfoRow label="Група" value={trip.groupName} />
+          <InfoRow label="Дати" value={`${trip.startDate} - ${trip.endDate}`} />
+          <InfoRow label="Участници" value={String(trip.participantsCount)} />
           <InfoRow
-            label="Estimated budget"
-            value={trip.estimatedBudget ? `${trip.estimatedBudget} лв.` : "Not set"}
+            label="Капацитет"
+            value={trip.capacity?.toString() ?? "Без ограничение"}
           />
-          <InfoRow label="Meeting point" value={trip.meetingPoint ?? "Not set"} />
+          <InfoRow
+            label="Ориентировъчен бюджет"
+            value={trip.estimatedBudget ? `${trip.estimatedBudget} лв.` : "Не е зададен"}
+          />
+          <InfoRow
+            label="Място на среща"
+            value={trip.meetingPoint ?? "Не е зададено"}
+          />
         </dl>
 
         <section className="mt-8">
           <h2 className="text-xl font-bold tracking-tight text-slate-950">
-            Description
+            Описание
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-700">
-            {trip.description ?? "No description added for this trip."}
+            {trip.description ?? "Няма добавено описание за това пътуване."}
           </p>
         </section>
 
@@ -87,7 +93,7 @@ export default async function TripPage({ params }: TripPageProps) {
                 type="submit"
                 className="h-10 w-full cursor-pointer rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 sm:w-auto"
               >
-                Leave trip
+                Напусни пътуването
               </button>
             </form>
           ) : (
@@ -98,7 +104,7 @@ export default async function TripPage({ params }: TripPageProps) {
                 disabled={trip.canceled}
                 className="h-10 w-full cursor-pointer rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
               >
-                Join
+                Присъедини се
               </button>
             </form>
           )}
@@ -112,7 +118,7 @@ export default async function TripPage({ params }: TripPageProps) {
                 type="submit"
                 className="h-10 w-full cursor-pointer rounded-md border border-amber-200 bg-amber-50 px-4 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 sm:w-auto"
               >
-                Cancel
+                Отмени
               </button>
             </form>
           ) : null}

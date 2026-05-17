@@ -19,11 +19,8 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <header className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-          Travel Group Organizer
-        </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-          My Dashboard
+          Моето табло
         </h1>
       </header>
 
@@ -37,7 +34,7 @@ export default async function DashboardPage() {
                 id="groups-heading"
                 className="text-xl font-bold tracking-tight text-slate-950"
               >
-                My Travel Groups
+                Моите туристически групи
               </h2>
               <p className="mt-1 text-sm text-slate-600">
                 Групите, в които участвате в момента.
@@ -61,7 +58,7 @@ export default async function DashboardPage() {
               id="trips-heading"
               className="text-xl font-bold tracking-tight text-slate-950"
             >
-              Upcoming Trips
+              Предстоящи пътувания
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               Най-близките активни пътувания от вашите групи.

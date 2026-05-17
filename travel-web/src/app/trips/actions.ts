@@ -35,13 +35,13 @@ export async function createTripAction(formData: FormData) {
   const estimatedBudget = getStringValue(formData, "estimatedBudget");
 
   if (!groupId || !title || !destination || !startDate || !endDate) {
-    throw new Error("Missing required trip fields.");
+    throw new Error("Липсват задължителни полета за пътуването.");
   }
 
   const canCreateTrip = await userCanCreateTrip(groupId, currentUser.id);
 
   if (!canCreateTrip) {
-    throw new Error("You cannot create a trip for this group.");
+    throw new Error("Не можете да създадете пътуване за тази група.");
   }
 
   await createTrip({
@@ -70,7 +70,7 @@ export async function joinTripAction(formData: FormData) {
   const tripId = Number(getStringValue(formData, "tripId"));
 
   if (!Number.isInteger(tripId) || tripId <= 0) {
-    throw new Error("Invalid trip.");
+    throw new Error("Невалидно пътуване.");
   }
 
   await joinTrip(tripId, currentUser.id);
@@ -89,7 +89,7 @@ export async function leaveTripAction(formData: FormData) {
   const tripId = Number(getStringValue(formData, "tripId"));
 
   if (!Number.isInteger(tripId) || tripId <= 0) {
-    throw new Error("Invalid trip.");
+    throw new Error("Невалидно пътуване.");
   }
 
   await leaveTrip(tripId, currentUser.id);
@@ -108,7 +108,7 @@ export async function cancelTripAction(formData: FormData) {
   const tripId = Number(getStringValue(formData, "tripId"));
 
   if (!Number.isInteger(tripId) || tripId <= 0) {
-    throw new Error("Invalid trip.");
+    throw new Error("Невалидно пътуване.");
   }
 
   await cancelTrip(tripId, currentUser.id);
