@@ -23,3 +23,12 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Show pointer cursor when hovering interactive buttons */
+button:hover,
+[role="button"]:hover,
+.btn:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover {
+  cursor: pointer;
+}

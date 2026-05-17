@@ -1,0 +1,159 @@
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+
+import { getCurrentUser } from "@/lib/auth";
+import {
+  getGroupDetails,
+  getGroupMembers,
+  getGroupTrips,
+  userCanViewGroup,
+} from "@/services/groupService";
+
+type GroupPageProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export default async function GroupPage({ params }: GroupPageProps) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login");
+  }
+
+  const { id } = await params;
+  const groupId = Number(id);
+
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    notFound();
+  }
+
+  const canViewGroup = await userCanViewGroup(groupId, currentUser.id);
+
+  if (!canViewGroup) {
+    notFound();
+  }
+
+  const group = await getGroupDetails(groupId);
+
+  if (!group) {
+    notFound();
+  }
+
+  const [members, groupTrips] = await Promise.all([
+    getGroupMembers(groupId),
+    getGroupTrips(groupId),
+  ]);
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <Link
+        href="/dashboard"
+        className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+      >
+        Back to Dashboard
+      </Link>
+
+      <header className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+              {group.visibility}
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+              {group.name}
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              {group.description ?? "Няма добавено описание за тази група."}
+            </p>
+          </div>
+          <div className="rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <p>
+              Owner:{" "}
+              <span className="font-semibold text-slate-950">
+                {group.ownerName}
+              </span>
+            </p>
+            <p>
+              Members:{" "}
+              <span className="font-semibold text-slate-950">
+                {group.membersCount}
+              </span>
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <main className="mt-8 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+        <section
+          aria-labelledby="members-heading"
+          className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+        >
+          <h2
+            id="members-heading"
+            className="text-xl font-bold tracking-tight text-slate-950"
+          >
+            Members
+          </h2>
+          <div className="mt-5 space-y-3">
+            {members.map((member) => (
+              <article
+                key={member.id}
+                className="flex items-center justify-between gap-4 rounded-md bg-slate-50 p-3"
+              >
+                <div>
+                  <h3 className="font-semibold text-slate-950">
+                    {member.name}
+                  </h3>
+                  <p className="text-sm text-slate-600">{member.email}</p>
+                </div>
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                  {member.role}
+                </span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section aria-labelledby="trips-heading">
+          <h2
+            id="trips-heading"
+            className="text-xl font-bold tracking-tight text-slate-950"
+          >
+            Group Trips
+          </h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {groupTrips.map((trip) => (
+              <article
+                key={trip.id}
+                className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+              >
+                <h3 className="text-lg font-semibold text-slate-950">
+                  {trip.title}
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {trip.destination}
+                </p>
+                <dl className="mt-4 space-y-2 text-sm text-slate-600">
+                  <div className="flex justify-between gap-4">
+                    <dt>Dates</dt>
+                    <dd className="font-medium text-slate-950">
+                      {trip.startDate} - {trip.endDate}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>Participants</dt>
+                    <dd className="font-medium text-slate-950">
+                      {trip.participantsCount}
+                    </dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
