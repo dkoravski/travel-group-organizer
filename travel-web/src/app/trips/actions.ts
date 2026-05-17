@@ -75,6 +75,7 @@ export async function joinTripAction(formData: FormData) {
 
   await joinTrip(tripId, currentUser.id);
   revalidatePath("/trips");
+  revalidatePath(`/trips/${tripId}`);
   revalidatePath("/dashboard");
 }
 
@@ -93,6 +94,7 @@ export async function leaveTripAction(formData: FormData) {
 
   await leaveTrip(tripId, currentUser.id);
   revalidatePath("/trips");
+  revalidatePath(`/trips/${tripId}`);
   revalidatePath("/dashboard");
 }
 
@@ -111,5 +113,6 @@ export async function cancelTripAction(formData: FormData) {
 
   await cancelTrip(tripId, currentUser.id);
   revalidatePath("/trips");
+  revalidatePath(`/trips/${tripId}`);
   revalidatePath("/dashboard");
 }

@@ -48,8 +48,8 @@ export async function createTrip(input: CreateTripInput) {
   });
 }
 
-export async function getAllTrips(userId: number) {
-  const rows = await db
+export async function getAllTrips(userId: number, onlyMyGroups = true) {
+  const base = db
     .select({
       id: trips.id,
       title: trips.title,
@@ -68,11 +68,16 @@ export async function getAllTrips(userId: number) {
       )`,
     })
     .from(trips)
-    .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId))
-    .innerJoin(
-      groupMembers,
-      and(eq(groupMembers.groupId, travelGroups.id), eq(groupMembers.userId, userId)),
-    )
+    .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId));
+
+  const withOptionalFilter = onlyMyGroups
+    ? base.innerJoin(
+        groupMembers,
+        and(eq(groupMembers.groupId, travelGroups.id), eq(groupMembers.userId, userId)),
+      )
+    : base;
+
+  const rows = await withOptionalFilter
     .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
     .groupBy(trips.id, travelGroups.name)
     .orderBy(asc(trips.startDate));
@@ -81,6 +86,53 @@ export async function getAllTrips(userId: number) {
     ...row,
     participantsCount: Number(row.participantsCount),
   }));
+}
+
+export async function getTripDetails(tripId: number, userId: number) {
+  const [trip] = await db
+    .select({
+      id: trips.id,
+      groupId: trips.groupId,
+      title: trips.title,
+      description: trips.description,
+      destination: trips.destination,
+      startDate: trips.startDate,
+      endDate: trips.endDate,
+      meetingPoint: trips.meetingPoint,
+      capacity: trips.capacity,
+      estimatedBudget: trips.estimatedBudget,
+      canceled: trips.canceled,
+      createdBy: trips.createdBy,
+      createdAt: trips.createdAt,
+      updatedAt: trips.updatedAt,
+      groupName: travelGroups.name,
+      participantsCount: count(tripParticipants.id),
+      isGroupMember: sql<boolean>`exists (
+        select 1
+        from ${groupMembers} user_membership
+        where user_membership.group_id = ${trips.groupId}
+          and user_membership.user_id = ${userId}
+      )`,
+      isJoined: sql<boolean>`exists (
+        select 1
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+      )`,
+    })
+    .from(trips)
+    .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId))
+    .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
+    .where(eq(trips.id, tripId))
+    .groupBy(trips.id, travelGroups.name)
+    .limit(1);
+
+  return trip
+    ? {
+        ...trip,
+        participantsCount: Number(trip.participantsCount),
+      }
+    : null;
 }
 
 export async function joinTrip(tripId: number, userId: number) {
