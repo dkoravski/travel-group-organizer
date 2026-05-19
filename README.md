@@ -1,8 +1,9 @@
-# Travel Group Organizer
-Build a Travel Group Organizer app: a software product for planning and managing group trips.
+## Project Description: Travel Group Organizer
+
+The Travel Group Organizer app is a software product for planning and managing group trips.
 The app allows users to create travel groups, plan trips, manage participants, discuss details, track itinerary items
 
-# Roles in the App
+## Roles in the App
 Visitor:
 - Description: Anonymous user
 - Can:
@@ -58,7 +59,7 @@ Admin:
     - manage all trips
     - remove inappropriate content
 
-# Travel Groups
+## Travel Groups
 Description: Travel groups represent communities of people who travel together.
 
 Each group has:
@@ -79,7 +80,7 @@ Features:
 - promote member to manager
 - remove member
 
-# Trips
+## Trips
 Description: Trips are the main planned travel events.
 
 Each trip has:
@@ -124,7 +125,7 @@ Packing List:
     - members mark items as packed for themselves
     - members can suggest new items
 
-# Web App Scope
+## Web App Scope
 
 The Web app is the primary application and implements the full functionality.
 
@@ -146,7 +147,7 @@ Web features:
 - packing list management
 - shared resources
 
-# Mobile App Scope
+## Mobile App Scope
 
 The mobile app is a smaller companion app for travelers.
 
