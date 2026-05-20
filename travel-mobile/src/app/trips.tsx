@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getTrips, type TripSummary } from '@/lib/api';
@@ -41,11 +41,13 @@ export default function TripsScreen() {
     }
   }, [token]);
 
-  useEffect(() => {
-    if (token) {
-      loadTrips();
-    }
-  }, [loadTrips, token]);
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        loadTrips();
+      }
+    }, [loadTrips, token]),
+  );
 
   function handleLogout() {
     signOut();
@@ -101,7 +103,15 @@ export default function TripsScreen() {
           data={trips}
           keyExtractor={(trip) => String(trip.id)}
           renderItem={({ item }) => (
-            <Pressable style={styles.card} onPress={() => router.push('/trip-details')}>
+            <Pressable
+              style={styles.card}
+              onPress={() =>
+                router.push({
+                  pathname: '/trip-details',
+                  params: { id: String(item.id) },
+                })
+              }
+            >
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <Text style={[styles.badge, item.canceled && styles.canceledBadge]}>
@@ -112,6 +122,7 @@ export default function TripsScreen() {
               <Text style={styles.cardMeta}>{formatDateRange(item.startDate, item.endDate)}</Text>
               <Text style={styles.cardMeta}>{item.groupName}</Text>
               <Text style={styles.cardMeta}>{item.participantsCount} участници</Text>
+              <Text style={styles.detailsLink}>Детайли</Text>
             </Pressable>
           )}
         />
@@ -168,6 +179,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     marginTop: 10,
+  },
+  detailsLink: {
+    alignSelf: 'flex-start',
+    color: '#0f766e',
+    fontSize: 15,
+    fontWeight: '800',
+    marginTop: 14,
   },
   emptyState: {
     borderWidth: 1,
