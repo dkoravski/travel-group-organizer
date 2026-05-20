@@ -10,7 +10,10 @@ Travel Group Organizer is an application for organizing group trips, excursions,
 # Tech Guidelines
 - Technologies: React Native + Expo + Expo Router
 - Back-end: Travel Group Organizer Restful API, with "Bearer token" auth
+
+# API Docs
 - Back-end API source code: '..\travel-web\src\app\api'
+- Back-end API documentation: http://localhost:3000/api/docs
 
 # Architecture Guidelines
 Use **Modular design**: split the app into meaningful components, to avoid too much code in a single file and reuse repeating code

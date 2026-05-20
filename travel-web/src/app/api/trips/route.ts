@@ -1,8 +1,12 @@
 import { NextRequest } from "next/server";
 
 import { getApiUser } from "@/lib/api/auth";
-import { apiError, apiOk } from "@/lib/api/responses";
+import { apiError, apiOk, apiOptions } from "@/lib/api/responses";
 import { getTripsPage } from "@/services/tripService";
+
+export function OPTIONS() {
+  return apiOptions();
+}
 
 function getPositiveInt(value: string | null, fallback: number, max?: number) {
   const parsed = Number(value);
