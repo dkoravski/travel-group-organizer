@@ -42,8 +42,8 @@ export async function verifyPassword(password: string, passwordHash: string) {
   return bcrypt.compare(password, passwordHash);
 }
 
-export async function createSession(user: SessionPayload) {
-  const token = await new SignJWT({
+export async function createAuthToken(user: SessionPayload) {
+  return new SignJWT({
     userId: user.userId,
     email: user.email,
     name: user.name,
@@ -53,6 +53,32 @@ export async function createSession(user: SessionPayload) {
     .setIssuedAt()
     .setExpirationTime(`${sessionDurationSeconds}s`)
     .sign(getJwtSecretKey());
+}
+
+export async function verifyAuthToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, getJwtSecretKey());
+
+    if (
+      typeof payload.userId !== "number" ||
+      typeof payload.email !== "string" ||
+      typeof payload.name !== "string"
+    ) {
+      return null;
+    }
+
+    return {
+      userId: payload.userId,
+      email: payload.email,
+      name: payload.name,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function createSession(user: SessionPayload) {
+  const token = await createAuthToken(user);
 
   const cookieStore = await cookies();
 
@@ -78,25 +104,7 @@ export async function getSession() {
     return null;
   }
 
-  try {
-    const { payload } = await jwtVerify(token, getJwtSecretKey());
-
-    if (
-      typeof payload.userId !== "number" ||
-      typeof payload.email !== "string" ||
-      typeof payload.name !== "string"
-    ) {
-      return null;
-    }
-
-    return {
-      userId: payload.userId,
-      email: payload.email,
-      name: payload.name,
-    };
-  } catch {
-    return null;
-  }
+  return verifyAuthToken(token);
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {

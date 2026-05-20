@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, count, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -89,6 +89,73 @@ export async function getAllTrips(userId: number, onlyMyGroups = true) {
   }));
 }
 
+type GetTripsPageOptions = {
+  page: number;
+  pageSize: number;
+  onlyMyGroups?: boolean;
+};
+
+export async function getTripsPage(
+  userId: number,
+  { page, pageSize, onlyMyGroups = true }: GetTripsPageOptions,
+) {
+  const offset = (page - 1) * pageSize;
+  const membershipFilter = and(
+    eq(groupMembers.groupId, travelGroups.id),
+    eq(groupMembers.userId, userId),
+  );
+
+  const base = db
+    .select({
+      id: trips.id,
+      title: trips.title,
+      destination: trips.destination,
+      startDate: trips.startDate,
+      endDate: trips.endDate,
+      canceled: trips.canceled,
+      groupName: travelGroups.name,
+      participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
+      isJoined: sql<boolean>`exists (
+        select 1
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+      )`,
+    })
+    .from(trips)
+    .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId));
+
+  const rowsQuery = onlyMyGroups
+    ? base.innerJoin(groupMembers, membershipFilter)
+    : base;
+
+  const rows = await rowsQuery
+    .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
+    .groupBy(trips.id, travelGroups.name)
+    .orderBy(asc(trips.startDate))
+    .limit(pageSize)
+    .offset(offset);
+
+  const totalBase = db
+    .select({ value: count() })
+    .from(trips)
+    .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId));
+
+  const [totalRow] = await (onlyMyGroups
+    ? totalBase.innerJoin(groupMembers, membershipFilter)
+    : totalBase);
+
+  return {
+    data: rows.map((row) => ({
+      ...row,
+      participantsCount: Number(row.participantsCount),
+    })),
+    page,
+    pageSize,
+    total: Number(totalRow?.value ?? 0),
+  };
+}
+
 export async function getTripDetails(tripId: number, userId: number) {
   const [trip] = await db
     .select({
@@ -168,6 +235,30 @@ export async function joinTrip(tripId: number, userId: number, guestsCount = 0) 
       guestsCount: guestsCount ?? 0,
     })
     .onConflictDoNothing();
+}
+
+export function canReserveSeats({
+  capacity,
+  participantsCount,
+  currentUserGuestsCount = 0,
+  requestedGuestsCount,
+  isAlreadyJoined,
+}: {
+  capacity: number | null;
+  participantsCount: number;
+  currentUserGuestsCount?: number;
+  requestedGuestsCount: number;
+  isAlreadyJoined: boolean;
+}) {
+  if (capacity == null) {
+    return true;
+  }
+
+  const currentUserTotal = isAlreadyJoined ? currentUserGuestsCount + 1 : 0;
+  const requestedUserTotal = requestedGuestsCount + 1;
+  const adjustedTotal = participantsCount - currentUserTotal + requestedUserTotal;
+
+  return adjustedTotal <= capacity;
 }
 
 export async function leaveTrip(tripId: number, userId: number) {
