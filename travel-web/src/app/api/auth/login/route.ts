@@ -3,12 +3,8 @@ import { NextRequest } from "next/server";
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { apiError, apiOk, apiOptions } from "@/lib/api/responses";
+import { apiError, apiOk } from "@/lib/api/responses";
 import { createAuthToken, verifyPassword } from "@/lib/auth";
-
-export function OPTIONS() {
-  return apiOptions();
-}
 
 export async function POST(request: NextRequest) {
   let body: unknown;

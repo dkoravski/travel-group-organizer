@@ -2,6 +2,7 @@ import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 
 import { sessionCookieName } from "@/lib/auth-constants";
+import { apiCorsHeaders, applyApiCorsHeaders } from "@/lib/api/cors";
 
 const publicRoutes = new Set(["/", "/login", "/register"]);
 const authRoutes = new Set(["/login", "/register"]);
@@ -35,7 +36,16 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+        status: 204,
+        headers: apiCorsHeaders,
+      });
+    }
+
+    const response = NextResponse.next();
+    applyApiCorsHeaders(response.headers);
+    return response;
   }
 
   const isPublicRoute = publicRoutes.has(pathname);

@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
 
+import { apiCorsHeaderList } from "./src/lib/api/cors";
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  async headers() {
+    return [
+      {
+        source: "/api/:path*",
+        headers: apiCorsHeaderList,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

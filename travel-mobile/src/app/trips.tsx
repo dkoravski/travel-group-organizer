@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getTrips, type TripSummary } from '@/lib/api';
-import { useAuth } from '@/lib/auth-context';
+import { useRequireAuth } from '@/lib/use-require-auth';
 
 function formatDateRange(startDate: string, endDate: string) {
   const formatter = new Intl.DateTimeFormat('bg-BG', {
@@ -16,14 +16,13 @@ function formatDateRange(startDate: string, endDate: string) {
 }
 
 export default function TripsScreen() {
-  const { token, user, signOut } = useAuth();
+  const { isNavigationReady, isRestoring, token, user, signOut } = useRequireAuth();
   const [trips, setTrips] = useState<TripSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadTrips = useCallback(async () => {
     if (!token) {
-      router.replace('/login');
       return;
     }
 
@@ -43,12 +42,24 @@ export default function TripsScreen() {
   }, [token]);
 
   useEffect(() => {
-    loadTrips();
-  }, [loadTrips]);
+    if (token) {
+      loadTrips();
+    }
+  }, [loadTrips, token]);
 
   function handleLogout() {
     signOut();
     router.replace('/');
+  }
+
+  if (!isNavigationReady || isRestoring || !token) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.state}>
+          <ActivityIndicator color="#0f766e" />
+        </View>
+      </View>
+    );
   }
 
   return (

@@ -4,7 +4,7 @@ const configuredApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export const API_BASE_URL =
   configuredApiBaseUrl ||
-  (Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000');
+  (Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api');
 
 export type ApiUser = {
   id: number;
@@ -40,7 +40,7 @@ export type TripsPage = {
 };
 
 export async function login(email: string, password: string) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function getTrips(token: string) {
-  const response = await fetch(`${API_BASE_URL}/api/trips?page=1&pageSize=50`, {
+  const response = await fetch(`${API_BASE_URL}/trips?page=1&pageSize=50`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

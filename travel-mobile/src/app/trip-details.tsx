@@ -1,6 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useRequireAuth } from '@/lib/use-require-auth';
+
 export default function TripDetailsScreen() {
+  const { isNavigationReady, isRestoring, token } = useRequireAuth();
+
+  if (!isNavigationReady || isRestoring || !token) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
