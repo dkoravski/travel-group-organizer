@@ -54,6 +54,9 @@ export async function Header() {
                   {currentUser.email}
                 </span>
               </div>
+              <Link href="/profile" className={navLinkClass}>
+                Профил
+              </Link>
               <LogoutButton />
             </>
           ) : (
@@ -61,10 +64,7 @@ export async function Header() {
               <Link href="/login" className={navLinkClass}>
                 Вход
               </Link>
-              <Link
-                href="/register"
-                className={navLinkClass}
-              >
+              <Link href="/register" className={navLinkClass}>
                 Регистрация
               </Link>
             </>
