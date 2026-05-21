@@ -1,12 +1,27 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import {
+  createTripComment,
+  getTripComments,
   getTripDetails,
+  getTripPreferences,
   joinTrip,
   leaveTrip,
+  saveTripPreferences,
+  type TripComment,
   type TripDetails,
+  updateTripComment,
   updateTripGuests,
 } from '@/lib/api';
 import { useRequireAuth } from '@/lib/use-require-auth';
@@ -23,13 +38,21 @@ function formatDateRange(startDate: string, endDate: string) {
 
 export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { isNavigationReady, isRestoring, token } = useRequireAuth();
+  const { isNavigationReady, isRestoring, token, user } = useRequireAuth();
   const tripId = Number(id);
   const [trip, setTrip] = useState<TripDetails | null>(null);
+  const [comments, setComments] = useState<TripComment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCommentSaving, setIsCommentSaving] = useState(false);
+  const [isPreferencesSaving, setIsPreferencesSaving] = useState(false);
   const [draftGuestsCount, setDraftGuestsCount] = useState(0);
+  const [commentDraft, setCommentDraft] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [transportPreference, setTransportPreference] = useState('');
+  const [accommodationPreference, setAccommodationPreference] = useState('');
+  const [preferenceNote, setPreferenceNote] = useState('');
   const [isLeaveConfirmVisible, setIsLeaveConfirmVisible] = useState(false);
 
   const hasValidTripId = Number.isInteger(tripId) && tripId > 0;
@@ -61,6 +84,22 @@ export default function TripDetailsScreen() {
     try {
       const nextTrip = await getTripDetails(token, tripId);
       setTrip(nextTrip);
+      setTransportPreference(nextTrip.userTransportPreference || '');
+      setAccommodationPreference(nextTrip.userAccommodationPreference || '');
+      setPreferenceNote(nextTrip.userNote || '');
+
+      const [nextComments, preferences] = await Promise.all([
+        getTripComments(token, tripId),
+        nextTrip.isJoined ? getTripPreferences(token, tripId) : Promise.resolve(null),
+      ]);
+
+      setComments(nextComments);
+
+      if (preferences) {
+        setTransportPreference(preferences.transportPreference || '');
+        setAccommodationPreference(preferences.accommodationPreference || '');
+        setPreferenceNote(preferences.note || '');
+      }
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -119,6 +158,77 @@ export default function TripDetailsScreen() {
     }
 
     runMutation(() => updateTripGuests(token, trip.id, draftGuestsCount));
+  }
+
+  async function handleSavePreferences() {
+    if (!token || !trip?.isJoined) {
+      return;
+    }
+
+    setIsPreferencesSaving(true);
+    setError(null);
+
+    try {
+      const updatedTrip = await saveTripPreferences(token, trip.id, {
+        transportPreference,
+        accommodationPreference,
+        note: preferenceNote,
+      });
+      setTrip(updatedTrip);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Предпочитанията не могат да бъдат запазени.',
+      );
+    } finally {
+      setIsPreferencesSaving(false);
+    }
+  }
+
+  async function handleSaveComment() {
+    if (!token || !trip || !commentDraft.trim()) {
+      return;
+    }
+
+    setIsCommentSaving(true);
+    setError(null);
+
+    try {
+      if (editingCommentId) {
+        const updatedComment = await updateTripComment(
+          token,
+          trip.id,
+          editingCommentId,
+          commentDraft,
+        );
+        setComments((current) =>
+          current.map((comment) =>
+            comment.id === updatedComment.id ? updatedComment : comment,
+          ),
+        );
+      } else {
+        const createdComment = await createTripComment(token, trip.id, commentDraft);
+        setComments((current) => [createdComment, ...current]);
+      }
+
+      setCommentDraft('');
+      setEditingCommentId(null);
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Коментарът не може да бъде запазен.');
+    } finally {
+      setIsCommentSaving(false);
+    }
+  }
+
+  function handleEditComment(comment: TripComment) {
+    setEditingCommentId(comment.id);
+    setCommentDraft(comment.content);
+  }
+
+  function handleCancelCommentEdit() {
+    setEditingCommentId(null);
+    setCommentDraft('');
   }
 
   if (!isNavigationReady || isRestoring || !token) {
@@ -268,6 +378,129 @@ export default function TripDetailsScreen() {
           </View>
         </Modal>
 
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Предпочитания</Text>
+          {trip.isJoined ? (
+            <>
+              <Text style={styles.body}>Запазете личните си предпочитания за това пътуване.</Text>
+              <View style={styles.field}>
+                <Text style={styles.label}>Транспорт</Text>
+                <TextInput
+                  editable={!isPreferencesSaving}
+                  maxLength={120}
+                  onChangeText={setTransportPreference}
+                  placeholder="напр. споделен автомобил"
+                  style={styles.input}
+                  value={transportPreference}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Настаняване</Text>
+                <TextInput
+                  editable={!isPreferencesSaving}
+                  maxLength={120}
+                  onChangeText={setAccommodationPreference}
+                  placeholder="напр. двойна стая"
+                  style={styles.input}
+                  value={accommodationPreference}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Бележка</Text>
+                <TextInput
+                  editable={!isPreferencesSaving}
+                  maxLength={500}
+                  multiline
+                  onChangeText={setPreferenceNote}
+                  placeholder="Допълнителна информация към групата"
+                  style={[styles.input, styles.textArea]}
+                  textAlignVertical="top"
+                  value={preferenceNote}
+                />
+              </View>
+              <Pressable
+                disabled={isPreferencesSaving}
+                style={[styles.primaryButton, isPreferencesSaving && styles.disabledButton]}
+                onPress={handleSavePreferences}
+              >
+                {isPreferencesSaving ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Запази предпочитанията</Text>
+                )}
+              </Pressable>
+            </>
+          ) : (
+            <Text style={styles.body}>Присъединете се към пътуването, за да добавите предпочитания.</Text>
+          )}
+        </View>
+
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Коментари</Text>
+          <View style={styles.field}>
+            <Text style={styles.label}>
+              {editingCommentId ? 'Редактиране на коментар' : 'Нов коментар'}
+            </Text>
+            <TextInput
+              editable={!isCommentSaving}
+              maxLength={2000}
+              multiline
+              onChangeText={setCommentDraft}
+              placeholder="Напишете коментар към групата"
+              style={[styles.input, styles.textArea]}
+              textAlignVertical="top"
+              value={commentDraft}
+            />
+          </View>
+          <View style={styles.inlineActions}>
+            <Pressable
+              disabled={isCommentSaving || !commentDraft.trim()}
+              style={[
+                styles.primaryButton,
+                (isCommentSaving || !commentDraft.trim()) && styles.disabledButton,
+              ]}
+              onPress={handleSaveComment}
+            >
+              {isCommentSaving ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text style={styles.primaryButtonText}>
+                  {editingCommentId ? 'Запази коментара' : 'Добави коментар'}
+                </Text>
+              )}
+            </Pressable>
+            {editingCommentId ? (
+              <Pressable
+                disabled={isCommentSaving}
+                style={styles.cancelButton}
+                onPress={handleCancelCommentEdit}
+              >
+                <Text style={styles.cancelButtonText}>Отказ</Text>
+              </Pressable>
+            ) : null}
+          </View>
+
+          <View style={styles.commentsList}>
+            {comments.length > 0 ? (
+              comments.map((comment) => (
+                <View key={comment.id} style={styles.commentItem}>
+                  <View style={styles.commentHeader}>
+                    <Text style={styles.commentAuthor}>{comment.userName}</Text>
+                    {comment.userId === user?.id ? (
+                      <Pressable onPress={() => handleEditComment(comment)}>
+                        <Text style={styles.editLink}>Редактирай</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                  <Text style={styles.commentText}>{comment.content}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.body}>Все още няма коментари.</Text>
+            )}
+          </View>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Участници</Text>
           <Text style={styles.body}>
@@ -313,6 +546,32 @@ const styles = StyleSheet.create({
   canceledStatus: {
     backgroundColor: '#fee4e2',
     color: '#b42318',
+  },
+  commentAuthor: {
+    color: '#19212a',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  commentHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  commentItem: {
+    borderTopWidth: 1,
+    borderTopColor: '#e4e7ec',
+    paddingTop: 14,
+  },
+  commentText: {
+    color: '#46515a',
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 8,
+  },
+  commentsList: {
+    gap: 14,
+    marginTop: 18,
   },
   cancelButton: {
     alignItems: 'center',
@@ -400,10 +659,19 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.55,
   },
+  editLink: {
+    color: '#0f766e',
+    fontSize: 14,
+    fontWeight: '800',
+  },
   error: {
     color: '#b42318',
     fontSize: 15,
     lineHeight: 22,
+    marginTop: 16,
+  },
+  field: {
+    gap: 8,
     marginTop: 16,
   },
   guestsValue: {
@@ -412,6 +680,27 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     minWidth: 36,
     textAlign: 'center',
+  },
+  inlineActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d0d5dd',
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    color: '#19212a',
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  label: {
+    color: '#27313b',
+    fontSize: 14,
+    fontWeight: '700',
   },
   meta: {
     color: '#5c6873',
@@ -458,6 +747,14 @@ const styles = StyleSheet.create({
     borderTopColor: '#dfe4e8',
     marginTop: 24,
     paddingTop: 18,
+  },
+  sectionCard: {
+    borderWidth: 1,
+    borderColor: '#dfe4e8',
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    marginTop: 24,
+    padding: 18,
   },
   sectionTitle: {
     color: '#19212a',
@@ -509,6 +806,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginTop: 8,
+  },
+  textArea: {
+    minHeight: 96,
   },
   title: {
     color: '#19212a',

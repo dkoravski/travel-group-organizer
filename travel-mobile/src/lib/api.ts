@@ -42,6 +42,26 @@ export type TripDetails = TripSummary & {
   updatedAt: string;
   isGroupMember: boolean;
   userGuestsCount: number;
+  userTransportPreference: string | null;
+  userAccommodationPreference: string | null;
+  userNote: string | null;
+};
+
+export type TripPreferences = {
+  tripId: number;
+  userId: number;
+  transportPreference: string | null;
+  accommodationPreference: string | null;
+  note: string | null;
+};
+
+export type TripComment = {
+  id: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  userName: string;
 };
 
 export type TripsPage = {
@@ -136,4 +156,106 @@ export function leaveTrip(token: string, tripId: number) {
 
 export function updateTripGuests(token: string, tripId: number, guestsCount: number) {
   return mutateTrip(token, tripId, 'guests', guestsCount);
+}
+
+export async function getTripPreferences(token: string, tripId: number) {
+  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/preferences`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw new Error(body.error || 'Предпочитанията не могат да бъдат заредени.');
+  }
+
+  return body.data as TripPreferences;
+}
+
+export async function saveTripPreferences(
+  token: string,
+  tripId: number,
+  preferences: {
+    transportPreference: string;
+    accommodationPreference: string;
+    note: string;
+  },
+) {
+  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/preferences`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(preferences),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw new Error(body.error || 'Предпочитанията не могат да бъдат запазени.');
+  }
+
+  return body.data as TripDetails;
+}
+
+export async function getTripComments(token: string, tripId: number) {
+  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/comment`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw new Error(body.error || 'Коментарите не могат да бъдат заредени.');
+  }
+
+  return body.data as TripComment[];
+}
+
+export async function createTripComment(token: string, tripId: number, content: string) {
+  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/comment`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ content }),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw new Error(body.error || 'Коментарът не може да бъде добавен.');
+  }
+
+  return body.data as TripComment;
+}
+
+export async function updateTripComment(
+  token: string,
+  tripId: number,
+  commentId: number,
+  content: string,
+) {
+  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/comment/${commentId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ content }),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw new Error(body.error || 'Коментарът не може да бъде редактиран.');
+  }
+
+  return body.data as TripComment;
 }

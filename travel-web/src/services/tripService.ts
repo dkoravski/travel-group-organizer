@@ -276,6 +276,32 @@ export async function createTripComment(
   });
 }
 
+export async function updateTripComment(
+  commentId: number,
+  tripId: number,
+  userId: number,
+  content: string,
+) {
+  const [comment] = await db
+    .update(tripComments)
+    .set({
+      content,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(tripComments.id, commentId),
+        eq(tripComments.tripId, tripId),
+        eq(tripComments.userId, userId),
+      ),
+    )
+    .returning({
+      id: tripComments.id,
+    });
+
+  return Boolean(comment);
+}
+
 export async function joinTrip(tripId: number, userId: number, guestsCount = 0) {
   await db
     .insert(tripParticipants)

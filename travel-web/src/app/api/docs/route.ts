@@ -111,6 +111,10 @@ export function GET() {
         <p><span class="method">POST</span> <code>/api/trips/{id}/comment</code></p>
         <pre>{ "content": "Looking forward to this trip!" }</pre>
         <p>Creates a comment for a trip in one of the authenticated user's groups.</p>
+
+        <p><span class="method">PATCH</span> <code>/api/trips/{id}/comment/{commentId}</code></p>
+        <pre>{ "content": "Updated comment text" }</pre>
+        <p>Updates one of the authenticated user's own comments.</p>
       </section>
     </main>
   </body>
