@@ -4,6 +4,9 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { getCurrentUser } from "@/lib/auth";
 import { userHasManagedGroups } from "@/services/groupService";
 
+const navLinkClass =
+  "rounded-full px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/20 hover:text-white";
+
 export async function Header() {
   const currentUser = await getCurrentUser();
   const hasManagerAccess = currentUser
@@ -11,68 +14,56 @@ export async function Header() {
     : false;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-emerald-900/20 bg-gradient-to-r from-slate-700 via-slate-600 to-emerald-600 shadow-lg shadow-slate-900/10">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <Link
           href="/"
-          className="text-lg font-bold tracking-tight text-slate-950 sm:text-xl"
+          className="group inline-flex items-center gap-3 text-lg font-bold tracking-tight text-white"
         >
-          Travel Group Organizer
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sm font-black text-emerald-700 shadow-lg shadow-slate-900/10 transition group-hover:bg-emerald-50">
+            TG
+          </span>
+          <span>Travel Group Organizer</span>
         </Link>
 
         <nav
           aria-label="Основна навигация"
-          className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-700"
+          className="flex flex-wrap items-center gap-2 rounded-full border border-white/20 bg-white/10 p-1"
         >
-          <Link
-            href="/"
-            className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
-          >
+          <Link href="/" className={navLinkClass}>
             Начало
           </Link>
-          <Link
-            href="/about"
-            className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
-          >
+          <Link href="/about" className={navLinkClass}>
             За приложението
           </Link>
           {currentUser ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/dashboard"
-                className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
-              >
+            <>
+              <Link href="/dashboard" className={navLinkClass}>
                 Моето табло
               </Link>
               {hasManagerAccess ? (
-                <Link
-                  href="/manager"
-                  className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
-                >
+                <Link href="/manager" className={navLinkClass}>
                   Мениджърски панел
                 </Link>
               ) : null}
-              <div className="text-sm leading-tight text-slate-700">
-                <span className="block font-semibold text-slate-950">
+              <div className="hidden px-3 text-sm leading-tight text-slate-100 sm:block">
+                <span className="block font-semibold text-white">
                   {currentUser.name}
                 </span>
-                <span className="block text-xs text-slate-500">
+                <span className="block text-xs text-emerald-50/80">
                   {currentUser.email}
                 </span>
               </div>
               <LogoutButton />
-            </div>
+            </>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
-              >
+              <Link href="/login" className={navLinkClass}>
                 Вход
               </Link>
               <Link
                 href="/register"
-                className="rounded-md bg-emerald-600 px-3 py-2 text-white transition hover:bg-emerald-700"
+                className={navLinkClass}
               >
                 Регистрация
               </Link>

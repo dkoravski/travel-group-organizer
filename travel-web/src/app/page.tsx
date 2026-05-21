@@ -1,86 +1,63 @@
+import Link from "next/link";
+
+import { getNearestPublicUpcomingTrip } from "@/services/tripService";
+
 const features = [
   {
     title: "Туристически групи",
     description:
-      "Създавайте групи за приятели, семейство или общност и управлявайте участниците на едно място.",
+      "Създавайте групи за приятели, семейство или общност и управлявайте членовете на едно място.",
   },
   {
     title: "Планиране на пътувания",
     description:
-      "Планирайте маршрути, дати, срещи, бюджет и програма за всяко пътуване.",
+      "Подредете дати, дестинация, бюджет, капацитет и място на среща без разпилени чатове.",
   },
   {
-    title: "Споделени списъци за багаж",
+    title: "Коментари и предпочитания",
     description:
-      "Поддържайте общи списъци за багаж, за да не липсва нищо важно преди тръгване.",
+      "Събирайте идеи, въпроси и лични предпочитания за транспорт, настаняване и важни бележки.",
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const upcomingTrip = await getNearestPublicUpcomingTrip();
+
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-      <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="max-w-2xl">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-emerald-700">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+      <section className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="max-w-3xl">
+          <p className="mb-5 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold uppercase tracking-wide text-emerald-800">
             Организирани пътувания без хаос
           </p>
-          <h1 className="text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-            Планирайте следващото групово приключение спокойно.
+          <h1 className="max-w-3xl text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+            Планирайте групови приключения с увереност
           </h1>
-          <p className="mt-6 text-lg leading-8 text-slate-700">
-            Планирайте групови пътувания, канете приятели, управлявайте
-            маршрути, всички организирани на едно място.
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            Travel Group Organizer събира групи, пътувания, членове,
+            коментари и предпочитания в един ясен работен център за малки
+            туристически общности.
           </p>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="space-y-5">
-            <div>
-              <p className="text-sm font-medium text-slate-500">
-                Предстоящо пътуване
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-slate-950">
-                Seven Rila Lakes
-              </h2>
-            </div>
-            <dl className="grid grid-cols-2 gap-4 text-sm">
-              <div className="rounded-md bg-slate-50 p-4">
-                <dt className="text-slate-500">Участници</dt>
-                <dd className="mt-1 text-xl font-semibold text-slate-950">12</dd>
-              </div>
-              <div className="rounded-md bg-slate-50 p-4">
-                <dt className="text-slate-500">Бюджет</dt>
-                <dd className="mt-1 text-xl font-semibold text-slate-950">
-                  75 лв.
-                </dd>
-              </div>
-              <div className="rounded-md bg-slate-50 p-4">
-                <dt className="text-slate-500">Маршрут</dt>
-                <dd className="mt-1 text-xl font-semibold text-slate-950">4</dd>
-              </div>
-              <div className="rounded-md bg-slate-50 p-4">
-                <dt className="text-slate-500">Багаж</dt>
-                <dd className="mt-1 text-xl font-semibold text-slate-950">9</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
+        <UpcomingTripCard trip={upcomingTrip} />
       </section>
 
       <section aria-labelledby="features-heading">
-        <h2
+        <p
           id="features-heading"
-          className="text-2xl font-bold tracking-tight text-slate-950"
+          className="text-sm font-bold uppercase tracking-wide text-emerald-700"
         >
           Основни възможности
-        </h2>
+        </p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {features.map((feature) => (
             <article
               key={feature.title}
-              className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+              className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10"
             >
-              <h3 className="text-lg font-semibold text-slate-950">
+              <div className="mb-5 h-1.5 w-12 rounded-full bg-emerald-500" />
+              <h3 className="text-lg font-bold text-slate-950">
                 {feature.title}
               </h3>
               <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -92,4 +69,80 @@ export default function Home() {
       </section>
     </div>
   );
+}
+
+function UpcomingTripCard({
+  trip,
+}: {
+  trip: Awaited<ReturnType<typeof getNearestPublicUpcomingTrip>>;
+}) {
+  if (!trip) {
+    return (
+      <div className="rounded-3xl border border-slate-200 bg-white/90 p-7 shadow-2xl shadow-slate-900/10">
+        <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+          Предстоящо пътуване
+        </p>
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-950">
+          Все още няма публични предстоящи пътувания
+        </h2>
+        <p className="mt-4 text-sm leading-6 text-slate-600">
+          Създайте публична група и добавете пътуване, за да се появи тук.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href="/register"
+      className="group block rounded-3xl border border-slate-200 bg-white/95 p-7 shadow-2xl shadow-slate-900/10 transition hover:-translate-y-1 hover:shadow-emerald-900/15"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-wide text-emerald-700">
+            Най-близко публично пътуване
+          </p>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950">
+            {trip.title}
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">{trip.destination}</p>
+        </div>
+        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+          Активно
+        </span>
+      </div>
+      <dl className="mt-7 grid grid-cols-2 gap-4 text-sm">
+        <InfoTile label="Група" value={trip.groupName} />
+        <InfoTile
+          label="Дати"
+          value={`${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}`}
+        />
+        <InfoTile label="Участници" value={String(trip.participantsCount)} />
+        <InfoTile
+          label="Бюджет"
+          value={trip.estimatedBudget ? `${trip.estimatedBudget} лв.` : "Не е зададен"}
+        />
+      </dl>
+      <p className="mt-6 text-sm font-bold text-emerald-700 transition group-hover:text-emerald-800">
+        Регистрирайте се, за да организирате подобно пътуване
+      </p>
+    </Link>
+  );
+}
+
+function InfoTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 p-4">
+      <dt className="text-slate-500">{label}</dt>
+      <dd className="mt-1 text-base font-bold text-slate-950">{value}</dd>
+    </div>
+  );
+}
+
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat("bg-BG", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(date));
 }

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -28,6 +28,43 @@ type CreateTripInput = {
 type UpdateTripInput = Omit<CreateTripInput, "createdBy"> & {
   tripId: number;
 };
+
+export async function getNearestPublicUpcomingTrip() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [trip] = await db
+    .select({
+      id: trips.id,
+      title: trips.title,
+      destination: trips.destination,
+      startDate: trips.startDate,
+      endDate: trips.endDate,
+      estimatedBudget: trips.estimatedBudget,
+      capacity: trips.capacity,
+      groupName: travelGroups.name,
+      participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
+    })
+    .from(trips)
+    .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId))
+    .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
+    .where(
+      and(
+        eq(travelGroups.visibility, "public"),
+        eq(trips.canceled, false),
+        gte(trips.startDate, today),
+      ),
+    )
+    .groupBy(trips.id, travelGroups.name)
+    .orderBy(asc(trips.startDate))
+    .limit(1);
+
+  return trip
+    ? {
+        ...trip,
+        participantsCount: Number(trip.participantsCount),
+      }
+    : null;
+}
 
 export async function userCanCreateTrip(groupId: number, userId: number) {
   const [membership] = await db

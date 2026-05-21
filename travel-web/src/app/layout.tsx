@@ -32,7 +32,7 @@ export default function RootLayout({
       lang="bg"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-slate-50 text-slate-950">
+      <body className="flex min-h-full flex-col bg-[radial-gradient(circle_at_top_left,#ecfdf5_0,#f8fafc_34rem,#f8fafc_100%)] text-slate-950">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
