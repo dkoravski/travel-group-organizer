@@ -119,11 +119,10 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       id: users.id,
       name: users.name,
       email: users.email,
-      avatarUrl: users.avatarUrl,
     })
     .from(users)
     .where(eq(users.id, session.userId))
     .limit(1);
 
-  return user ?? null;
+  return user ? { ...user, avatarUrl: null } : null;
 }

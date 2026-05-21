@@ -1,12 +1,21 @@
 import Link from "next/link";
 
-const actions = [
-  { label: "Създай група", href: "/groups/create" },
-  { label: "Създай пътуване", href: "/trips/create" },
-  { label: "Разгледай пътувания", href: "/trips" },
-];
+export function DashboardQuickActions({
+  hasManagerAccess,
+}: {
+  hasManagerAccess: boolean;
+}) {
+  const actions = [
+    { label: "Създай група", href: "/groups/create" },
+    ...(hasManagerAccess
+      ? [
+          { label: "Мениджърски панел", href: "/manager" },
+          { label: "Създай пътуване", href: "/trips/create" },
+        ]
+      : []),
+    { label: "Разгледай пътувания", href: "/trips" },
+  ];
 
-export function DashboardQuickActions() {
   return (
     <section
       aria-labelledby="quick-actions-heading"
@@ -18,7 +27,7 @@ export function DashboardQuickActions() {
       >
         Бързи действия
       </h2>
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {actions.map((action) => (
           <Link
             key={action.href}

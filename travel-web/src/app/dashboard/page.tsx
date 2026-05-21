@@ -6,6 +6,7 @@ import { DashboardTripCard } from "@/components/DashboardTripCard";
 import { DashboardWelcomeCard } from "@/components/DashboardWelcomeCard";
 import { getCurrentUser } from "@/lib/auth";
 import { getDashboardData } from "@/services/dashboardService";
+import { userHasManagedGroups } from "@/services/groupService";
 
 export default async function DashboardPage() {
   const currentUser = await getCurrentUser();
@@ -14,7 +15,10 @@ export default async function DashboardPage() {
     redirect("/login?redirectTo=/dashboard");
   }
 
-  const { groups, upcomingTrips } = await getDashboardData(currentUser.id);
+  const [{ groups, upcomingTrips }, hasManagerAccess] = await Promise.all([
+    getDashboardData(currentUser.id),
+    userHasManagedGroups(currentUser.id),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -75,7 +79,7 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <DashboardQuickActions />
+        <DashboardQuickActions hasManagerAccess={hasManagerAccess} />
       </main>
     </div>
   );

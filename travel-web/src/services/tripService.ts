@@ -25,18 +25,28 @@ type CreateTripInput = {
   createdBy: number;
 };
 
+type UpdateTripInput = Omit<CreateTripInput, "createdBy"> & {
+  tripId: number;
+};
+
 export async function userCanCreateTrip(groupId: number, userId: number) {
   const [membership] = await db
     .select({ id: groupMembers.id })
     .from(groupMembers)
-    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+    .where(
+      and(
+        eq(groupMembers.groupId, groupId),
+        eq(groupMembers.userId, userId),
+        eq(groupMembers.role, "manager"),
+      ),
+    )
     .limit(1);
 
   return Boolean(membership);
 }
 
 export async function createTrip(input: CreateTripInput) {
-  await db.insert(trips).values({
+  const [trip] = await db.insert(trips).values({
     groupId: input.groupId,
     title: input.title,
     description: input.description || null,
@@ -47,7 +57,48 @@ export async function createTrip(input: CreateTripInput) {
     capacity: input.capacity ?? null,
     estimatedBudget: input.estimatedBudget || null,
     createdBy: input.createdBy,
-  });
+  }).returning({ id: trips.id });
+
+  return trip;
+}
+
+export async function updateTrip(input: UpdateTripInput, userId: number) {
+  const [trip] = await db
+    .update(trips)
+    .set({
+      groupId: input.groupId,
+      title: input.title,
+      description: input.description || null,
+      destination: input.destination,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      meetingPoint: input.meetingPoint || null,
+      capacity: input.capacity ?? null,
+      estimatedBudget: input.estimatedBudget || null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(trips.id, input.tripId),
+        sql`exists (
+          select 1
+          from ${groupMembers} current_group_manager
+          where current_group_manager.group_id = ${trips.groupId}
+            and current_group_manager.user_id = ${userId}
+            and current_group_manager.role = 'manager'
+        )`,
+        sql`exists (
+          select 1
+          from ${groupMembers} target_group_manager
+          where target_group_manager.group_id = ${input.groupId}
+            and target_group_manager.user_id = ${userId}
+            and target_group_manager.role = 'manager'
+        )`,
+      ),
+    )
+    .returning({ id: trips.id });
+
+  return Boolean(trip);
 }
 
 export async function getAllTrips(userId: number, onlyMyGroups = true) {
@@ -231,6 +282,13 @@ export async function getTripDetails(tripId: number, userId: number) {
         where user_membership.group_id = ${trips.groupId}
           and user_membership.user_id = ${userId}
       )`,
+      isGroupManager: sql<boolean>`exists (
+        select 1
+        from ${groupMembers} manager_membership
+        where manager_membership.group_id = ${trips.groupId}
+          and manager_membership.user_id = ${userId}
+          and manager_membership.role = 'manager'
+      )`,
       userGuestsCount: sql<number>`(
         select coalesce(user_participation.guests_count, 0)
         from ${tripParticipants} user_participation
@@ -364,6 +422,33 @@ export async function updateTripComment(
   return Boolean(comment);
 }
 
+export async function deleteTripCommentAsManager(
+  commentId: number,
+  tripId: number,
+  userId: number,
+) {
+  const [comment] = await db
+    .delete(tripComments)
+    .where(
+      and(
+        eq(tripComments.id, commentId),
+        eq(tripComments.tripId, tripId),
+        sql`exists (
+          select 1
+          from ${trips}
+          inner join ${groupMembers} manager_membership
+            on manager_membership.group_id = ${trips.groupId}
+          where ${trips.id} = ${tripId}
+            and manager_membership.user_id = ${userId}
+            and manager_membership.role = 'manager'
+        )`,
+      ),
+    )
+    .returning({ id: tripComments.id });
+
+  return Boolean(comment);
+}
+
 export async function joinTrip(tripId: number, userId: number, guestsCount = 0) {
   await db
     .insert(tripParticipants)
@@ -446,11 +531,45 @@ export async function updateTripPreferences(
 }
 
 export async function cancelTrip(tripId: number, userId: number) {
-  await db
+  const [trip] = await db
     .update(trips)
     .set({
       canceled: true,
       updatedAt: new Date(),
     })
-    .where(and(eq(trips.id, tripId), eq(trips.createdBy, userId)));
+    .where(
+      and(
+        eq(trips.id, tripId),
+        sql`exists (
+          select 1
+          from ${groupMembers} manager_membership
+          where manager_membership.group_id = ${trips.groupId}
+            and manager_membership.user_id = ${userId}
+            and manager_membership.role = 'manager'
+        )`,
+      ),
+    )
+    .returning({ id: trips.id });
+
+  return Boolean(trip);
+}
+
+export async function deleteTrip(tripId: number, userId: number) {
+  const [trip] = await db
+    .delete(trips)
+    .where(
+      and(
+        eq(trips.id, tripId),
+        sql`exists (
+          select 1
+          from ${groupMembers} manager_membership
+          where manager_membership.group_id = ${trips.groupId}
+            and manager_membership.user_id = ${userId}
+            and manager_membership.role = 'manager'
+        )`,
+      ),
+    )
+    .returning({ id: trips.id });
+
+  return Boolean(trip);
 }

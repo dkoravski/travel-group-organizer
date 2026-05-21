@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export type DashboardTrip = {
   id: number;
   title: string;
@@ -27,7 +29,11 @@ export function DashboardTripCard({ trip }: DashboardTripCardProps) {
       : "bg-emerald-100 text-emerald-800";
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <Link
+      href={`/trips/${trip.id}`}
+      aria-label={`Отвори пътуване ${trip.title}`}
+      className="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold text-slate-950">{trip.title}</h3>
@@ -62,6 +68,6 @@ export function DashboardTripCard({ trip }: DashboardTripCardProps) {
           </dd>
         </div>
       </dl>
-    </article>
+    </Link>
   );
 }

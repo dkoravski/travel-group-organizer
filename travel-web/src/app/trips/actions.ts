@@ -8,8 +8,11 @@ import {
   cancelTrip,
   createTripComment,
   createTrip,
+  deleteTrip,
+  deleteTripCommentAsManager,
   joinTrip,
   leaveTrip,
+  updateTrip,
   updateTripPreferences,
   updateTripGuests,
   userCanCreateTrip,
@@ -19,6 +22,55 @@ import { getTripDetails } from "@/services/tripService";
 function getStringValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getTripPayload(formData: FormData) {
+  const groupId = Number(getStringValue(formData, "groupId"));
+  const title = getStringValue(formData, "title");
+  const destination = getStringValue(formData, "destination");
+  const description = getStringValue(formData, "description");
+  const startDate = getStringValue(formData, "startDate");
+  const endDate = getStringValue(formData, "endDate");
+  const meetingPoint = getStringValue(formData, "meetingPoint");
+  const capacityValue = getStringValue(formData, "capacity");
+  const estimatedBudget = getStringValue(formData, "estimatedBudget");
+  const capacity = capacityValue ? Number(capacityValue) : null;
+
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    throw new Error("Изберете валидна група.");
+  }
+
+  if (!title || !destination || !startDate || !endDate) {
+    throw new Error("Попълнете всички задължителни полета за пътуването.");
+  }
+
+  if (title.length > 180 || destination.length > 180) {
+    throw new Error("Заглавието и дестинацията не могат да са по-дълги от 180 символа.");
+  }
+
+  if (capacity !== null && (!Number.isInteger(capacity) || capacity <= 0)) {
+    throw new Error("Капацитетът трябва да е положително цяло число.");
+  }
+
+  if (estimatedBudget && Number(estimatedBudget) < 0) {
+    throw new Error("Бюджетът не може да е отрицателен.");
+  }
+
+  if (endDate < startDate) {
+    throw new Error("Крайната дата не може да е преди началната.");
+  }
+
+  return {
+    groupId,
+    title,
+    destination,
+    description: description || null,
+    startDate,
+    endDate,
+    meetingPoint: meetingPoint || null,
+    capacity,
+    estimatedBudget: estimatedBudget || null,
+  };
 }
 
 export async function updateTripPreferencesFormAction(
@@ -148,15 +200,18 @@ export async function createTripAction(formData: FormData) {
     redirect("/login?redirectTo=/trips/create");
   }
 
-  const groupId = Number(getStringValue(formData, "groupId"));
-  const title = getStringValue(formData, "title");
-  const destination = getStringValue(formData, "destination");
-  const description = getStringValue(formData, "description");
-  const startDate = getStringValue(formData, "startDate");
-  const endDate = getStringValue(formData, "endDate");
-  const meetingPoint = getStringValue(formData, "meetingPoint");
-  const capacity = getStringValue(formData, "capacity");
-  const estimatedBudget = getStringValue(formData, "estimatedBudget");
+  const payload = getTripPayload(formData);
+  const {
+    groupId,
+    title,
+    destination,
+    description,
+    startDate,
+    endDate,
+    meetingPoint,
+    capacity,
+    estimatedBudget,
+  } = payload;
 
   if (!groupId || !title || !destination || !startDate || !endDate) {
     throw new Error("Липсват задължителни полета за пътуването.");
@@ -182,6 +237,34 @@ export async function createTripAction(formData: FormData) {
   });
 
   redirect("/trips");
+}
+
+export async function updateTripAction(formData: FormData) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login?redirectTo=/trips");
+  }
+
+  const tripId = Number(getStringValue(formData, "tripId"));
+  const payload = getTripPayload(formData);
+
+  if (!Number.isInteger(tripId) || tripId <= 0) {
+    throw new Error("Невалидно пътуване.");
+  }
+
+  const updated = await updateTrip({ ...payload, tripId }, currentUser.id);
+
+  if (!updated) {
+    throw new Error("Нямате права да редактирате това пътуване.");
+  }
+
+  revalidatePath("/trips");
+  revalidatePath(`/trips/${tripId}`);
+  revalidatePath("/manager");
+  revalidatePath(`/groups/${payload.groupId}`);
+
+  redirect(`/trips/${tripId}`);
 }
 
 export async function joinTripAction(formData: FormData) {
@@ -255,10 +338,76 @@ export async function cancelTripAction(formData: FormData) {
     throw new Error("Невалидно пътуване.");
   }
 
-  await cancelTrip(tripId, currentUser.id);
+  const canceled = await cancelTrip(tripId, currentUser.id);
+
+  if (!canceled) {
+    throw new Error("Нямате права да отмените това пътуване.");
+  }
+
   revalidatePath("/trips");
   revalidatePath(`/trips/${tripId}`);
   revalidatePath("/dashboard");
+  revalidatePath("/manager");
+}
+
+export async function deleteTripAction(formData: FormData) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login?redirectTo=/trips");
+  }
+
+  const tripId = Number(getStringValue(formData, "tripId"));
+  const groupId = Number(getStringValue(formData, "groupId"));
+
+  if (!Number.isInteger(tripId) || tripId <= 0) {
+    throw new Error("Невалидно пътуване.");
+  }
+
+  const deleted = await deleteTrip(tripId, currentUser.id);
+
+  if (!deleted) {
+    throw new Error("Нямате права да изтриете това пътуване.");
+  }
+
+  revalidatePath("/trips");
+  revalidatePath("/dashboard");
+  revalidatePath("/manager");
+
+  if (Number.isInteger(groupId) && groupId > 0) {
+    revalidatePath(`/groups/${groupId}`);
+    redirect(`/groups/${groupId}`);
+  }
+
+  redirect("/manager");
+}
+
+export async function deleteTripCommentAction(formData: FormData) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login?redirectTo=/trips");
+  }
+
+  const tripId = Number(getStringValue(formData, "tripId"));
+  const commentId = Number(getStringValue(formData, "commentId"));
+
+  if (!Number.isInteger(tripId) || tripId <= 0 || !Number.isInteger(commentId) || commentId <= 0) {
+    throw new Error("Невалиден коментар.");
+  }
+
+  const deleted = await deleteTripCommentAsManager(
+    commentId,
+    tripId,
+    currentUser.id,
+  );
+
+  if (!deleted) {
+    throw new Error("Нямате права да модерирате коментарите за това пътуване.");
+  }
+
+  revalidatePath(`/trips/${tripId}`);
+  revalidatePath("/manager");
 }
 
 export async function updateTripGuestsAction(formData: FormData) {

@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 
 import {
   cancelTripAction,
+  deleteTripAction,
+  deleteTripCommentAction,
   joinTripAction,
   leaveTripAction,
 } from "@/app/trips/actions";
@@ -241,6 +243,18 @@ export default async function TripPage({ params }: TripPageProps) {
                   <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
                     {comment.content}
                   </p>
+                  {trip.isGroupManager ? (
+                    <form action={deleteTripCommentAction} className="mt-4">
+                      <input type="hidden" name="tripId" value={trip.id} />
+                      <input type="hidden" name="commentId" value={comment.id} />
+                      <button
+                        type="submit"
+                        className="cursor-pointer rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                      >
+                        Изтрий коментара
+                      </button>
+                    </form>
+                  ) : null}
                 </article>
               ))
             ) : (
@@ -296,7 +310,16 @@ export default async function TripPage({ params }: TripPageProps) {
 
           <ShareTripButton tripId={trip.id} />
 
-          {trip.createdBy === currentUser.id && !trip.canceled ? (
+          {trip.isGroupManager ? (
+            <Link
+              href={`/trips/${trip.id}/edit`}
+              className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
+            >
+              Редактирай
+            </Link>
+          ) : null}
+
+          {trip.isGroupManager && !trip.canceled ? (
             <form action={cancelTripAction}>
               <input type="hidden" name="tripId" value={trip.id} />
               <button
@@ -304,6 +327,19 @@ export default async function TripPage({ params }: TripPageProps) {
                 className="h-10 w-full cursor-pointer rounded-md border border-amber-200 bg-amber-50 px-4 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 sm:w-auto"
               >
                 Отмени
+              </button>
+            </form>
+          ) : null}
+
+          {trip.isGroupManager ? (
+            <form action={deleteTripAction}>
+              <input type="hidden" name="tripId" value={trip.id} />
+              <input type="hidden" name="groupId" value={trip.groupId} />
+              <button
+                type="submit"
+                className="h-10 w-full cursor-pointer rounded-md bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 sm:w-auto"
+              >
+                Изтрий
               </button>
             </form>
           ) : null}

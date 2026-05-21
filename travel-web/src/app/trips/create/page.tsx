@@ -2,16 +2,29 @@ import { redirect } from "next/navigation";
 
 import { createTripAction } from "@/app/trips/actions";
 import { getCurrentUser } from "@/lib/auth";
-import { getUserGroups } from "@/services/groupService";
+import { getManagedGroups } from "@/services/groupService";
 
-export default async function CreateTripPage() {
+type CreateTripPageProps = {
+  searchParams: Promise<{
+    groupId?: string;
+  }>;
+};
+
+export default async function CreateTripPage({ searchParams }: CreateTripPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     redirect("/login?redirectTo=/trips/create");
   }
 
-  const groups = await getUserGroups(currentUser.id);
+  const [{ groupId }, groups] = await Promise.all([
+    searchParams,
+    getManagedGroups(currentUser.id),
+  ]);
+
+  if (groups.length === 0) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -39,6 +52,7 @@ export default async function CreateTripPage() {
             id="groupId"
             name="groupId"
             required
+            defaultValue={groupId ?? ""}
             className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
           >
             <option value="">Изберете група</option>

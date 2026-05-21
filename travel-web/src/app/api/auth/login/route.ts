@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
       id: users.id,
       name: users.name,
       email: users.email,
-      avatarUrl: users.avatarUrl,
       passwordHash: users.passwordHash,
     })
     .from(users)
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
       id: user.id,
       name: user.name,
       email: user.email,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: null,
     },
   });
 }

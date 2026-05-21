@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, asc, count, eq, gte, inArray, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import type { DashboardGroup } from "@/components/DashboardGroupCard";
 import type { DashboardTrip } from "@/components/DashboardTripCard";
@@ -29,7 +30,7 @@ export async function getDashboardData(userId: number) {
   }
 
   const [groups, upcomingTrips] = await Promise.all([
-    getDashboardGroups(groupIds),
+    getDashboardGroups(groupIds, userId),
     getDashboardTrips(groupIds, today, userId),
   ]);
 
@@ -39,18 +40,31 @@ export async function getDashboardData(userId: number) {
   };
 }
 
-async function getDashboardGroups(groupIds: number[]): Promise<DashboardGroup[]> {
+async function getDashboardGroups(
+  groupIds: number[],
+  userId: number,
+): Promise<DashboardGroup[]> {
+  const currentUserMembership = alias(groupMembers, "current_user_membership");
+
   const rows = await db
     .select({
       id: travelGroups.id,
       name: travelGroups.name,
       description: travelGroups.description,
       membersCount: count(groupMembers.id),
+      currentUserRole: currentUserMembership.role,
     })
     .from(travelGroups)
     .leftJoin(groupMembers, eq(groupMembers.groupId, travelGroups.id))
+    .innerJoin(
+      currentUserMembership,
+      and(
+        eq(currentUserMembership.groupId, travelGroups.id),
+        eq(currentUserMembership.userId, userId),
+      ),
+    )
     .where(inArray(travelGroups.id, groupIds))
-    .groupBy(travelGroups.id)
+    .groupBy(travelGroups.id, currentUserMembership.role)
     .orderBy(asc(travelGroups.name))
     .limit(3);
 

@@ -1,10 +1,14 @@
 import Link from "next/link";
 
-import { getCurrentUser } from "@/lib/auth";
 import { LogoutButton } from "@/components/LogoutButton";
+import { getCurrentUser } from "@/lib/auth";
+import { userHasManagedGroups } from "@/services/groupService";
 
 export async function Header() {
   const currentUser = await getCurrentUser();
+  const hasManagerAccess = currentUser
+    ? await userHasManagedGroups(currentUser.id)
+    : false;
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
@@ -34,6 +38,14 @@ export async function Header() {
               >
                 Моето табло
               </Link>
+              {hasManagerAccess ? (
+                <Link
+                  href="/manager"
+                  className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
+                >
+                  Мениджърски панел
+                </Link>
+              ) : null}
               <div className="text-sm leading-tight text-slate-700">
                 <span className="block font-semibold text-slate-950">
                   {currentUser.name}
