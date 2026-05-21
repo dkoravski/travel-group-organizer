@@ -7,9 +7,14 @@ import {
   leaveTripAction,
 } from "@/app/trips/actions";
 import { ShareTripButton } from "@/components/ShareTripButton";
+import { TripCommentForm } from "@/components/TripCommentForm";
 import { TripGuestsForm } from "@/components/TripGuestsForm";
 import { getCurrentUser } from "@/lib/auth";
-import { getTripDetails, getTripParticipants } from "@/services/tripService";
+import {
+  getTripComments,
+  getTripDetails,
+  getTripParticipants,
+} from "@/services/tripService";
 
 type TripPageProps = {
   params: Promise<{
@@ -37,7 +42,10 @@ export default async function TripPage({ params }: TripPageProps) {
     notFound();
   }
 
-  const participants = await getTripParticipants(tripId);
+  const [participants, comments] = await Promise.all([
+    getTripParticipants(tripId),
+    getTripComments(tripId),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -131,6 +139,51 @@ export default async function TripPage({ params }: TripPageProps) {
           </section>
         ) : null}
 
+        <section className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-slate-950">
+                Коментари
+              </h2>
+              <p className="text-sm text-slate-600">
+                Обсъдете детайли, въпроси и идеи с групата.
+              </p>
+            </div>
+            <span className="text-sm font-semibold text-slate-700">
+              {comments.length}
+            </span>
+          </div>
+
+          <TripCommentForm tripId={trip.id} />
+
+          <div className="mt-6 space-y-3">
+            {comments.length > 0 ? (
+              comments.map((comment) => (
+                <article
+                  key={comment.id}
+                  className="rounded-md bg-white p-4 shadow-sm ring-1 ring-slate-200"
+                >
+                  <header className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <h3 className="text-sm font-semibold text-slate-950">
+                      {comment.userName}
+                    </h3>
+                    <time className="text-xs font-medium text-slate-500">
+                      {formatCommentDate(comment.createdAt)}
+                    </time>
+                  </header>
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                    {comment.content}
+                  </p>
+                </article>
+              ))
+            ) : (
+              <div className="rounded-md bg-white p-4 text-sm text-slate-600 ring-1 ring-slate-200">
+                Все още няма коментари за това пътуване.
+              </div>
+            )}
+          </div>
+        </section>
+
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           {trip.isJoined ? (
             <form action={leaveTripAction}>
@@ -200,4 +253,11 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <dd className="text-right font-semibold text-slate-950">{value}</dd>
     </div>
   );
+}
+
+function formatCommentDate(date: Date) {
+  return new Intl.DateTimeFormat("bg-BG", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
 }

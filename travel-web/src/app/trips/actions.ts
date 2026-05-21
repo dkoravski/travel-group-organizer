@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
 import {
   cancelTrip,
+  createTripComment,
   createTrip,
   joinTrip,
   leaveTrip,
@@ -19,7 +20,53 @@ function getStringValue(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+export async function createTripCommentAction(
+  _previousState: TripCommentActionState,
+  formData: FormData,
+): Promise<TripCommentActionState> {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login?redirectTo=/trips");
+  }
+
+  const tripId = Number(getStringValue(formData, "tripId"));
+  const content = getStringValue(formData, "content");
+
+  if (!Number.isInteger(tripId) || tripId <= 0) {
+    return { error: "Невалидно пътуване." };
+  }
+
+  if (content.length < 2) {
+    return { error: "Коментарът трябва да съдържа поне 2 символа." };
+  }
+
+  if (content.length > 1000) {
+    return { error: "Коментарът не може да бъде по-дълъг от 1000 символа." };
+  }
+
+  const trip = await getTripDetails(tripId, currentUser.id);
+
+  if (!trip?.isGroupMember) {
+    return { error: "Нямате достъп до коментарите за това пътуване." };
+  }
+
+  await createTripComment(tripId, currentUser.id, content);
+  revalidatePath(`/trips/${tripId}`);
+
+  return {
+    success: true,
+    message: "Коментарът е добавен.",
+  };
+}
+
 export type TripGuestsActionState = {
+  success?: boolean;
+  message?: string;
+  error?: string;
+};
+
+export type TripCommentActionState = {
   success?: boolean;
   message?: string;
   error?: string;

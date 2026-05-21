@@ -3,7 +3,7 @@ Travel Group Organizer is an application for organizing group trips, excursions,
 
 # Roles in the App
 - Visitor (anonymous user): can view home page, view public app information, register, login
-- User (authenticated user) can: manage own profile, create travel group, join travel group, view groups where they are member, create personal travel preferences
+- User (authenticated user) can: manage own profile, create travel group, join travel group, view groups where they are member, create trip comments, create personal travel preferences
 - Manager (manager of a travel group) can: create/edit/cancel/delete trips, manage group members, remove members from group, moderate comments
 - Admin can: view all users, manage all groups, manage all trips, remove inappropriate content
 

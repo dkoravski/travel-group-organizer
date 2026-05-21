@@ -1,11 +1,12 @@
 import "server-only";
 
-import { and, asc, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
   groupMembers,
   travelGroups,
+  tripComments,
   tripParticipants,
   trips,
 } from "@/db/schema";
@@ -224,6 +225,34 @@ export async function getTripParticipants(tripId: number) {
     .orderBy(asc(users.name));
 
   return rows.map((r) => ({ id: r.id, name: r.name, email: r.email, guestsCount: Number(r.guestsCount ?? 0) }));
+}
+
+export async function getTripComments(tripId: number) {
+  return db
+    .select({
+      id: tripComments.id,
+      content: tripComments.content,
+      createdAt: tripComments.createdAt,
+      updatedAt: tripComments.updatedAt,
+      userId: users.id,
+      userName: users.name,
+    })
+    .from(tripComments)
+    .innerJoin(users, eq(users.id, tripComments.userId))
+    .where(eq(tripComments.tripId, tripId))
+    .orderBy(desc(tripComments.createdAt));
+}
+
+export async function createTripComment(
+  tripId: number,
+  userId: number,
+  content: string,
+) {
+  await db.insert(tripComments).values({
+    tripId,
+    userId,
+    content,
+  });
 }
 
 export async function joinTrip(tripId: number, userId: number, guestsCount = 0) {
