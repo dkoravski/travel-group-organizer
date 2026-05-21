@@ -21,6 +21,7 @@ import {
   saveTripPreferences,
   type TripComment,
   type TripDetails,
+  type TripParticipantPreference,
   updateTripComment,
   updateTripGuests,
 } from '@/lib/api';
@@ -42,6 +43,7 @@ export default function TripDetailsScreen() {
   const tripId = Number(id);
   const [trip, setTrip] = useState<TripDetails | null>(null);
   const [comments, setComments] = useState<TripComment[]>([]);
+  const [participantPreferences, setParticipantPreferences] = useState<TripParticipantPreference[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -84,6 +86,7 @@ export default function TripDetailsScreen() {
     try {
       const nextTrip = await getTripDetails(token, tripId);
       setTrip(nextTrip);
+      setParticipantPreferences(nextTrip.participantPreferences ?? []);
       setTransportPreference(nextTrip.userTransportPreference || '');
       setAccommodationPreference(nextTrip.userAccommodationPreference || '');
       setPreferenceNote(nextTrip.userNote || '');
@@ -175,6 +178,7 @@ export default function TripDetailsScreen() {
         note: preferenceNote,
       });
       setTrip(updatedTrip);
+      await loadTrip();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -210,6 +214,11 @@ export default function TripDetailsScreen() {
       } else {
         const createdComment = await createTripComment(token, trip.id, commentDraft);
         setComments((current) => [createdComment, ...current]);
+        setTrip((current) =>
+          current
+            ? { ...current, commentsCount: current.commentsCount + 1 }
+            : current,
+        );
       }
 
       setCommentDraft('');
@@ -272,13 +281,44 @@ export default function TripDetailsScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.content}>
-        <Text style={[styles.status, trip.canceled && styles.canceledStatus]}>
-          {trip.canceled ? 'Отменено' : trip.isJoined ? 'Участвате' : 'В групата'}
-        </Text>
+        <View style={styles.statusRow}>
+          <Text style={[styles.status, trip.canceled && styles.canceledStatus]}>
+            {trip.canceled ? 'Отменено' : trip.isJoined ? 'Участвате' : 'В групата'}
+          </Text>
+          {trip.isJoined ? (
+            <Pressable
+              disabled={isSaving}
+              style={[styles.topDangerButton, isSaving && styles.disabledButton]}
+              onPress={() => setIsLeaveConfirmVisible(true)}
+            >
+              <Text style={styles.topDangerButtonText}>Напусни</Text>
+            </Pressable>
+          ) : null}
+        </View>
         <Text style={styles.title}>{trip.title}</Text>
         <Text style={styles.subtitle}>{trip.destination}</Text>
         <Text style={styles.meta}>{formatDateRange(trip.startDate, trip.endDate)}</Text>
         <Text style={styles.meta}>{trip.groupName}</Text>
+        <Text style={styles.meta}>
+          {trip.participantsCount} участници
+          {trip.capacity ? ` от максимум ${trip.capacity}` : ''}
+        </Text>
+        <Text style={styles.meta}>{trip.commentsCount} коментари</Text>
+        <Text style={styles.meta}>{trip.preferencesCount} предпочитания</Text>
+
+        {trip.description ? (
+          <View style={styles.tripIntroBlock}>
+            <Text style={styles.introLabel}>Описание</Text>
+            <Text style={styles.body}>{trip.description}</Text>
+          </View>
+        ) : null}
+
+        {trip.meetingPoint ? (
+          <View style={styles.tripIntroBlock}>
+            <Text style={styles.introLabel}>Място на среща</Text>
+            <Text style={styles.body}>{trip.meetingPoint}</Text>
+          </View>
+        ) : null}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -314,13 +354,6 @@ export default function TripDetailsScreen() {
                 ) : (
                   <Text style={styles.primaryButtonText}>Запази гостите</Text>
                 )}
-              </Pressable>
-              <Pressable
-                disabled={isSaving}
-                style={[styles.dangerButton, isSaving && styles.disabledButton]}
-                onPress={() => setIsLeaveConfirmVisible(true)}
-              >
-                <Text style={styles.dangerButtonText}>Напусни</Text>
               </Pressable>
             </>
           ) : (
@@ -436,7 +469,27 @@ export default function TripDetailsScreen() {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Коментари</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Предпочитания на участниците</Text>
+            <Text style={styles.countBadge}>{participantPreferences.length}</Text>
+          </View>
+          {participantPreferences.length > 0 ? (
+            <View style={styles.preferencesList}>
+              {participantPreferences.map((preference) => (
+                <View key={preference.userId} style={styles.preferenceItem}>
+                  <Text style={styles.preferenceAuthor}>{preference.userName}</Text>
+                  <PreferenceLine label="Транспорт" value={preference.transportPreference} />
+                  <PreferenceLine label="Настаняване" value={preference.accommodationPreference} />
+                  <PreferenceLine label="Бележка" value={preference.note} />
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.body}>Все още няма споделени предпочитания.</Text>
+          )}
+        </View>
+
+        <View style={styles.sectionCard}>
           <View style={styles.field}>
             <Text style={styles.label}>
               {editingCommentId ? 'Редактиране на коментар' : 'Нов коментар'}
@@ -480,6 +533,11 @@ export default function TripDetailsScreen() {
             ) : null}
           </View>
 
+          <View style={styles.commentsHeader}>
+            <Text style={styles.sectionTitle}>Коментари на участниците</Text>
+            <Text style={styles.countBadge}>{comments.length}</Text>
+          </View>
+
           <View style={styles.commentsList}>
             {comments.length > 0 ? (
               comments.map((comment) => (
@@ -501,30 +559,17 @@ export default function TripDetailsScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Участници</Text>
-          <Text style={styles.body}>
-            {trip.participantsCount} участници
-            {trip.capacity ? ` от максимум ${trip.capacity}` : ''}
-          </Text>
-        </View>
-
-        {trip.description ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Описание</Text>
-            <Text style={styles.body}>{trip.description}</Text>
-          </View>
-        ) : null}
-
-        {trip.meetingPoint ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Място на среща</Text>
-            <Text style={styles.body}>{trip.meetingPoint}</Text>
-          </View>
-        ) : null}
-
       </View>
     </ScrollView>
+  );
+}
+
+function PreferenceLine({ label, value }: { label: string; value: string | null }) {
+  return (
+    <View style={styles.preferenceLine}>
+      <Text style={styles.preferenceLabel}>{label}</Text>
+      <Text style={styles.preferenceValue}>{value?.trim() || 'Не е зададено'}</Text>
+    </View>
   );
 }
 
@@ -572,6 +617,22 @@ const styles = StyleSheet.create({
   commentsList: {
     gap: 14,
     marginTop: 18,
+  },
+  commentsHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+    marginTop: 24,
+  },
+  countBadge: {
+    borderRadius: 999,
+    backgroundColor: '#eef2f6',
+    color: '#344054',
+    fontSize: 13,
+    fontWeight: '800',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   cancelButton: {
     alignItems: 'center',
@@ -641,20 +702,6 @@ const styles = StyleSheet.create({
   },
   content: {
     maxWidth: 620,
-  },
-  dangerButton: {
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    borderRadius: 8,
-    backgroundColor: '#b42318',
-    marginTop: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-  },
-  dangerButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
   },
   disabledButton: {
     opacity: 0.55,
@@ -729,6 +776,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  preferenceAuthor: {
+    color: '#19212a',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  preferenceItem: {
+    borderTopWidth: 1,
+    borderTopColor: '#e4e7ec',
+    gap: 8,
+    paddingTop: 14,
+  },
+  preferenceLabel: {
+    color: '#667085',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  preferenceLine: {
+    gap: 3,
+  },
+  preferencesList: {
+    gap: 14,
+    marginTop: 18,
+  },
+  preferenceValue: {
+    color: '#27313b',
+    fontSize: 15,
+    lineHeight: 22,
+  },
   retryButton: {
     alignSelf: 'flex-start',
     borderRadius: 8,
@@ -756,6 +831,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
     padding: 18,
   },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
   sectionTitle: {
     color: '#19212a',
     fontSize: 18,
@@ -777,9 +858,15 @@ const styles = StyleSheet.create({
     color: '#0f766e',
     fontSize: 13,
     fontWeight: '700',
-    marginBottom: 12,
     paddingHorizontal: 10,
     paddingVertical: 5,
+  },
+  statusRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   stepper: {
     alignItems: 'center',
@@ -814,5 +901,28 @@ const styles = StyleSheet.create({
     color: '#19212a',
     fontSize: 30,
     fontWeight: '800',
+  },
+  topDangerButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: '#b42318',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  topDangerButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  introLabel: {
+    color: '#19212a',
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  tripIntroBlock: {
+    borderTopWidth: 1,
+    borderTopColor: '#dfe4e8',
+    marginTop: 18,
+    paddingTop: 16,
   },
 });

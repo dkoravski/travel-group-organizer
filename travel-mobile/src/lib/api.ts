@@ -28,6 +28,8 @@ export type TripSummary = {
   canceled: boolean;
   groupName: string;
   participantsCount: number;
+  commentsCount: number;
+  preferencesCount: number;
   isJoined: boolean;
 };
 
@@ -45,6 +47,8 @@ export type TripDetails = TripSummary & {
   userTransportPreference: string | null;
   userAccommodationPreference: string | null;
   userNote: string | null;
+  comments?: TripComment[];
+  participantPreferences?: TripParticipantPreference[];
 };
 
 export type TripPreferences = {
@@ -62,6 +66,14 @@ export type TripComment = {
   updatedAt: string;
   userId: number;
   userName: string;
+};
+
+export type TripParticipantPreference = {
+  userId: number;
+  userName: string;
+  transportPreference: string | null;
+  accommodationPreference: string | null;
+  note: string | null;
 };
 
 export type TripsPage = {

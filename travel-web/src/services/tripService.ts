@@ -133,6 +133,21 @@ export async function getTripsPage(
       canceled: trips.canceled,
       groupName: travelGroups.name,
       participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
+      commentsCount: sql<number>`(
+        select count(*)
+        from ${tripComments}
+        where ${tripComments.tripId} = ${trips.id}
+      )`,
+      preferencesCount: sql<number>`(
+        select count(*)
+        from ${tripParticipants} participant_preferences
+        where participant_preferences.trip_id = ${trips.id}
+          and (
+            nullif(trim(participant_preferences.transport_preference), '') is not null
+            or nullif(trim(participant_preferences.accommodation_preference), '') is not null
+            or nullif(trim(participant_preferences.note), '') is not null
+          )
+      )`,
       isJoined: sql<boolean>`exists (
         select 1
         from ${tripParticipants} user_participation
@@ -167,6 +182,8 @@ export async function getTripsPage(
     data: rows.map((row) => ({
       ...row,
       participantsCount: Number(row.participantsCount),
+      commentsCount: Number(row.commentsCount),
+      preferencesCount: Number(row.preferencesCount),
     })),
     page,
     pageSize,

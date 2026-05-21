@@ -122,6 +122,8 @@ export default function TripsScreen() {
               <Text style={styles.cardMeta}>{formatDateRange(item.startDate, item.endDate)}</Text>
               <Text style={styles.cardMeta}>{item.groupName}</Text>
               <Text style={styles.cardMeta}>{item.participantsCount} участници</Text>
+              <Text style={styles.cardMeta}>{item.commentsCount} коментари</Text>
+              <Text style={styles.cardMeta}>{item.preferencesCount} предпочитания</Text>
               <Text style={styles.detailsLink}>Детайли</Text>
             </Pressable>
           )}
