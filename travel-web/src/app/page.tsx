@@ -24,16 +24,16 @@ export default async function Home() {
   const upcomingTrip = await getNearestPublicUpcomingTrip();
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-      <section className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <div className="max-w-3xl">
           <p className="mb-5 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold uppercase tracking-wide text-emerald-800">
             Организирани пътувания без хаос
           </p>
-          <h1 className="max-w-3xl text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+          <h1 className="max-w-3xl text-xl font-black tracking-tight text-slate-950 sm:text-2xl lg:text-3xl">
             Планирайте групови приключения с увереност
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
             Travel Group Organizer събира групи, пътувания, членове,
             коментари и предпочитания в един ясен работен център за малки
             туристически общности.
@@ -50,17 +50,17 @@ export default async function Home() {
         >
           Основни възможности
         </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
           {features.map((feature) => (
             <article
               key={feature.title}
-              className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10"
+              className="rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10"
             >
-              <div className="mb-5 h-1.5 w-12 rounded-full bg-emerald-500" />
-              <h3 className="text-lg font-bold text-slate-950">
+              <div className="mb-3 h-1.5 w-12 rounded-full bg-emerald-500" />
+              <h3 className="text-base font-bold text-slate-950">
                 {feature.title}
               </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
+              <p className="mt-2 text-xs leading-5 text-slate-600">
                 {feature.description}
               </p>
             </article>
@@ -95,23 +95,23 @@ function UpcomingTripCard({
   return (
     <Link
       href="/register"
-      className="group block rounded-3xl border border-slate-200 bg-white/95 p-7 shadow-2xl shadow-slate-900/10 transition hover:-translate-y-1 hover:shadow-emerald-900/15"
+      className="group block rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-2xl shadow-slate-900/10 transition hover:-translate-y-1 hover:shadow-emerald-900/15"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-emerald-700">
             Най-близко пътуване
           </p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950">
+          <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-950">
             {trip.title}
           </h2>
-          <p className="mt-2 text-sm text-slate-600">{trip.destination}</p>
+          <p className="mt-2 text-xs text-slate-600">{trip.destination}</p>
         </div>
         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
           Активно
         </span>
       </div>
-      <dl className="mt-7 grid grid-cols-2 gap-4 text-sm">
+      <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
         <InfoTile label="Група" value={trip.groupName} />
         <InfoTile
           label="Дати"
@@ -132,9 +132,9 @@ function UpcomingTripCard({
 
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-4">
+    <div className="rounded-2xl bg-slate-50 p-2">
       <dt className="text-slate-500">{label}</dt>
-      <dd className="mt-1 text-base font-bold text-slate-950">{value}</dd>
+      <dd className="mt-1 text-xs font-bold text-slate-950">{value}</dd>
     </div>
   );
 }
