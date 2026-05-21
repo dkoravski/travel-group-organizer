@@ -90,6 +90,27 @@ export function GET() {
         <p><span class="method">POST</span> <code>/api/trips/{id}/guests</code></p>
         <pre>{ "guestsCount": 2 }</pre>
         <p>Updates additional reserved guests. The user must already be joined.</p>
+
+        <p><span class="method">GET</span> <code>/api/trips/{id}/preferences</code></p>
+        <p>Returns the joined user's saved transport, accommodation, and note preferences.</p>
+
+        <p><span class="method">POST</span> <code>/api/trips/{id}/preferences</code></p>
+        <pre>{
+  "transportPreference": "Shared car",
+  "accommodationPreference": "Double room",
+  "note": "Arriving after work"
+}</pre>
+        <p>Creates or updates trip preferences for the joined user. The API also accepts <code>TransportPreference</code>, <code>AccommodationPreference</code>, and <code>userNote</code> for compatibility.</p>
+      </section>
+
+      <section>
+        <h2>Comments</h2>
+        <p><span class="method">GET</span> <code>/api/trips/{id}/comment</code></p>
+        <p>Lists comments for a trip in one of the authenticated user's groups.</p>
+
+        <p><span class="method">POST</span> <code>/api/trips/{id}/comment</code></p>
+        <pre>{ "content": "Looking forward to this trip!" }</pre>
+        <p>Creates a comment for a trip in one of the authenticated user's groups.</p>
       </section>
     </main>
   </body>

@@ -24,3 +24,36 @@ export async function getGuestsCountFromJson(request: Request) {
 
   return guestsCount;
 }
+
+export async function getJsonBody(request: Request) {
+  try {
+    const body: unknown = await request.json();
+    return typeof body === "object" && body !== null
+      ? (body as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getOptionalString(
+  body: Record<string, unknown>,
+  key: string,
+  maxLength: number,
+) {
+  if (!(key in body) || body[key] == null) {
+    return "";
+  }
+
+  if (typeof body[key] !== "string") {
+    return null;
+  }
+
+  const value = body[key].trim();
+
+  if (value.length > maxLength) {
+    return null;
+  }
+
+  return value;
+}
