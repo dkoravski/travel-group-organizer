@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
   getTripDetails,
@@ -29,16 +29,26 @@ export default function TripDetailsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [draftGuestsCount, setDraftGuestsCount] = useState(0);
+  const [isLeaveConfirmVisible, setIsLeaveConfirmVisible] = useState(false);
 
   const hasValidTripId = Number.isInteger(tripId) && tripId > 0;
   const guestsCount = trip?.userGuestsCount ?? 0;
-  const isAtCapacity = useMemo(() => {
+  const canAddDraftGuest = useMemo(() => {
     if (!trip?.capacity) {
-      return false;
+      return true;
     }
 
-    return trip.participantsCount >= trip.capacity;
-  }, [trip]);
+    if (!trip.isJoined) {
+      return trip.participantsCount < trip.capacity;
+    }
+
+    const currentUserTotal = trip.userGuestsCount + 1;
+    const nextUserTotal = draftGuestsCount + 2;
+
+    return trip.participantsCount - currentUserTotal + nextUserTotal <= trip.capacity;
+  }, [draftGuestsCount, trip]);
+  const hasGuestChanges = draftGuestsCount !== guestsCount;
 
   const loadTrip = useCallback(async () => {
     if (!token || !hasValidTripId) {
@@ -68,6 +78,10 @@ export default function TripDetailsScreen() {
     }
   }, [hasValidTripId, loadTrip, token]);
 
+  useEffect(() => {
+    setDraftGuestsCount(guestsCount);
+  }, [guestsCount]);
+
   async function runMutation(action: () => Promise<TripDetails>) {
     setIsSaving(true);
     setError(null);
@@ -95,15 +109,16 @@ export default function TripDetailsScreen() {
       return;
     }
 
+    setIsLeaveConfirmVisible(false);
     runMutation(() => leaveTrip(token, trip.id));
   }
 
-  function handleGuestsChange(nextGuestsCount: number) {
-    if (!token || !trip || nextGuestsCount < 0) {
+  function handleSaveGuests() {
+    if (!token || !trip || !hasGuestChanges) {
       return;
     }
 
-    runMutation(() => updateTripGuests(token, trip.id, nextGuestsCount));
+    runMutation(() => updateTripGuests(token, trip.id, draftGuestsCount));
   }
 
   if (!isNavigationReady || isRestoring || !token) {
@@ -164,25 +179,36 @@ export default function TripDetailsScreen() {
               <Text style={styles.body}>Допълнителни гости към вашето участие.</Text>
               <View style={styles.stepper}>
                 <Pressable
-                  disabled={isSaving || guestsCount === 0}
-                  style={[styles.stepperButton, (isSaving || guestsCount === 0) && styles.disabledButton]}
-                  onPress={() => handleGuestsChange(guestsCount - 1)}
+                  disabled={isSaving || draftGuestsCount === 0}
+                  style={[styles.stepperButton, (isSaving || draftGuestsCount === 0) && styles.disabledButton]}
+                  onPress={() => setDraftGuestsCount((current) => Math.max(0, current - 1))}
                 >
                   <Text style={styles.stepperButtonText}>-</Text>
                 </Pressable>
-                <Text style={styles.guestsValue}>{guestsCount}</Text>
+                <Text style={styles.guestsValue}>{draftGuestsCount}</Text>
                 <Pressable
-                  disabled={isSaving || isAtCapacity}
-                  style={[styles.stepperButton, (isSaving || isAtCapacity) && styles.disabledButton]}
-                  onPress={() => handleGuestsChange(guestsCount + 1)}
+                  disabled={isSaving || !canAddDraftGuest}
+                  style={[styles.stepperButton, (isSaving || !canAddDraftGuest) && styles.disabledButton]}
+                  onPress={() => setDraftGuestsCount((current) => current + 1)}
                 >
                   <Text style={styles.stepperButtonText}>+</Text>
                 </Pressable>
               </View>
               <Pressable
+                disabled={isSaving || !hasGuestChanges}
+                style={[styles.primaryButton, (isSaving || !hasGuestChanges) && styles.disabledButton]}
+                onPress={handleSaveGuests}
+              >
+                {isSaving ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Запази гостите</Text>
+                )}
+              </Pressable>
+              <Pressable
                 disabled={isSaving}
                 style={[styles.dangerButton, isSaving && styles.disabledButton]}
-                onPress={handleLeave}
+                onPress={() => setIsLeaveConfirmVisible(true)}
               >
                 <Text style={styles.dangerButtonText}>Напусни</Text>
               </Pressable>
@@ -191,8 +217,8 @@ export default function TripDetailsScreen() {
             <>
               <Text style={styles.body}>Присъединете се към пътуването, за да резервирате места.</Text>
               <Pressable
-                disabled={isSaving || trip.canceled || isAtCapacity}
-                style={[styles.primaryButton, (isSaving || trip.canceled || isAtCapacity) && styles.disabledButton]}
+                disabled={isSaving || trip.canceled || !canAddDraftGuest}
+                style={[styles.primaryButton, (isSaving || trip.canceled || !canAddDraftGuest) && styles.disabledButton]}
                 onPress={handleJoin}
               >
                 {isSaving ? (
@@ -204,6 +230,43 @@ export default function TripDetailsScreen() {
             </>
           )}
         </View>
+
+        <Modal
+          animationType="fade"
+          transparent
+          visible={isLeaveConfirmVisible}
+          onRequestClose={() => setIsLeaveConfirmVisible(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.confirmDialog}>
+              <Text style={styles.confirmBadge}>Внимание</Text>
+              <Text style={styles.confirmTitle}>Да напуснете ли пътуването?</Text>
+              <Text style={styles.confirmText}>
+                Вашето участие и резервираните допълнителни гости ще бъдат премахнати.
+              </Text>
+              <View style={styles.confirmActions}>
+                <Pressable
+                  disabled={isSaving}
+                  style={styles.cancelButton}
+                  onPress={() => setIsLeaveConfirmVisible(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Отказ</Text>
+                </Pressable>
+                <Pressable
+                  disabled={isSaving}
+                  style={[styles.confirmDangerButton, isSaving && styles.disabledButton]}
+                  onPress={handleLeave}
+                >
+                  {isSaving ? (
+                    <ActivityIndicator color="#ffffff" />
+                  ) : (
+                    <Text style={styles.confirmDangerButtonText}>Напусни</Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Участници</Text>
@@ -251,6 +314,67 @@ const styles = StyleSheet.create({
     backgroundColor: '#fee4e2',
     color: '#b42318',
   },
+  cancelButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#d0d5dd',
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  cancelButtonText: {
+    color: '#344054',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 22,
+  },
+  confirmBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    backgroundColor: '#fee4e2',
+    color: '#b42318',
+    fontSize: 13,
+    fontWeight: '800',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  confirmDangerButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: '#dc2626',
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  confirmDangerButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  confirmDialog: {
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    maxWidth: 420,
+    padding: 22,
+    width: '100%',
+  },
+  confirmText: {
+    color: '#475467',
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 8,
+  },
+  confirmTitle: {
+    color: '#101828',
+    fontSize: 21,
+    fontWeight: '800',
+    marginTop: 14,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f7f7f2',
@@ -293,6 +417,13 @@ const styles = StyleSheet.create({
     color: '#5c6873',
     fontSize: 15,
     marginTop: 8,
+  },
+  modalBackdrop: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.58)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
   },
   primaryButton: {
     alignItems: 'center',
