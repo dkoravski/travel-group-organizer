@@ -100,7 +100,7 @@ function UpcomingTripCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-emerald-700">
-            Най-близко публично пътуване
+            Най-близко пътуване
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950">
             {trip.title}
