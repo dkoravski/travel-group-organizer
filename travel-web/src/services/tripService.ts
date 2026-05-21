@@ -189,6 +189,27 @@ export async function getTripDetails(tripId: number, userId: number) {
           and user_participation.user_id = ${userId}
         limit 1
       )`,
+      userTransportPreference: sql<string | null>`(
+        select user_participation.transport_preference
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+        limit 1
+      )`,
+      userAccommodationPreference: sql<string | null>`(
+        select user_participation.accommodation_preference
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+        limit 1
+      )`,
+      userNote: sql<string | null>`(
+        select user_participation.note
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+        limit 1
+      )`,
       isJoined: sql<boolean>`exists (
         select 1
         from ${tripParticipants} user_participation
@@ -306,6 +327,31 @@ export async function updateTripGuests(
   await db
     .update(tripParticipants)
     .set({ guestsCount })
+    .where(
+      and(eq(tripParticipants.tripId, tripId), eq(tripParticipants.userId, userId)),
+    );
+}
+
+export async function updateTripPreferences(
+  tripId: number,
+  userId: number,
+  {
+    transportPreference,
+    accommodationPreference,
+    note,
+  }: {
+    transportPreference: string | null;
+    accommodationPreference: string | null;
+    note: string | null;
+  },
+) {
+  await db
+    .update(tripParticipants)
+    .set({
+      transportPreference,
+      accommodationPreference,
+      note,
+    })
     .where(
       and(eq(tripParticipants.tripId, tripId), eq(tripParticipants.userId, userId)),
     );

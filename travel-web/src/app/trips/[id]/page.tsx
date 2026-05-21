@@ -9,6 +9,7 @@ import {
 import { ShareTripButton } from "@/components/ShareTripButton";
 import { TripCommentForm } from "@/components/TripCommentForm";
 import { TripGuestsForm } from "@/components/TripGuestsForm";
+import { TripPreferencesForm } from "@/components/TripPreferencesForm";
 import { getCurrentUser } from "@/lib/auth";
 import {
   getTripComments,
@@ -135,6 +136,24 @@ export default async function TripPage({ params }: TripPageProps) {
             <TripGuestsForm
               tripId={trip.id}
               guestsCount={trip.userGuestsCount}
+            />
+          </section>
+        ) : null}
+
+        {trip.isJoined ? (
+          <section className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
+            <h2 className="text-xl font-bold tracking-tight text-slate-950">
+              Лични предпочитания
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Споделете транспорт, настаняване и важни бележки за вашето участие.
+            </p>
+
+            <TripPreferencesForm
+              tripId={trip.id}
+              transportPreference={trip.userTransportPreference ?? null}
+              accommodationPreference={trip.userAccommodationPreference ?? null}
+              note={trip.userNote ?? null}
             />
           </section>
         ) : null}

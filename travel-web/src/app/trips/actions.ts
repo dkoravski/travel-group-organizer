@@ -10,6 +10,7 @@ import {
   createTrip,
   joinTrip,
   leaveTrip,
+  updateTripPreferences,
   updateTripGuests,
   userCanCreateTrip,
 } from "@/services/tripService";
@@ -18,6 +19,68 @@ import { getTripDetails } from "@/services/tripService";
 function getStringValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+export async function updateTripPreferencesFormAction(
+  _previousState: TripPreferencesActionState,
+  formData: FormData,
+): Promise<TripPreferencesActionState> {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login?redirectTo=/trips");
+  }
+
+  const tripId = Number(getStringValue(formData, "tripId"));
+  const transportPreference = getStringValue(formData, "transportPreference");
+  const accommodationPreference = getStringValue(
+    formData,
+    "accommodationPreference",
+  );
+  const note = getStringValue(formData, "note");
+
+  if (!Number.isInteger(tripId) || tripId <= 0) {
+    return { error: "Невалидно пътуване." };
+  }
+
+  if (transportPreference.length > 120) {
+    return {
+      error: "Предпочитаният транспорт не може да е по-дълъг от 120 символа.",
+    };
+  }
+
+  if (accommodationPreference.length > 120) {
+    return {
+      error: "Предпочитанията за настаняване не могат да са по-дълги от 120 символа.",
+    };
+  }
+
+  if (note.length > 1000) {
+    return {
+      error: "Бележката не може да бъде по-дълга от 1000 символа.",
+    };
+  }
+
+  const trip = await getTripDetails(tripId, currentUser.id);
+
+  if (!trip?.isJoined) {
+    return {
+      error: "Първо трябва да се присъедините към пътуването, за да добавите предпочитания.",
+    };
+  }
+
+  await updateTripPreferences(tripId, currentUser.id, {
+    transportPreference: transportPreference || null,
+    accommodationPreference: accommodationPreference || null,
+    note: note || null,
+  });
+
+  revalidatePath(`/trips/${tripId}`);
+
+  return {
+    success: true,
+    message: "Предпочитанията са запазени.",
+  };
 }
 
 export async function createTripCommentAction(
@@ -67,6 +130,12 @@ export type TripGuestsActionState = {
 };
 
 export type TripCommentActionState = {
+  success?: boolean;
+  message?: string;
+  error?: string;
+};
+
+export type TripPreferencesActionState = {
   success?: boolean;
   message?: string;
   error?: string;
