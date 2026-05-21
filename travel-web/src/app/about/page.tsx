@@ -103,6 +103,13 @@ export default function AboutPage() {
           Към началото
         </Link>
       </div>
+
+      <section className="mt-8 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-bold tracking-tight text-slate-950">За контакти</h2>
+        <p className="mt-3 text-sm text-slate-700">
+          Относно въпроси и поддръжка пишете на <a href="mailto:info@travelgrouporganizer.com" className="font-medium text-emerald-700">info@travelgrouporganizer.com</a>
+        </p>
+      </section>
     </div>
   );
 }

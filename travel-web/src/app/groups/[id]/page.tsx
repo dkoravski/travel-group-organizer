@@ -95,7 +95,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
             id="members-heading"
             className="text-xl font-bold tracking-tight text-slate-950"
           >
-            Участници
+            Членове на групата
           </h2>
           {canManageGroup ? <AddGroupMemberForm groupId={group.id} /> : null}
           <div className="mt-5 space-y-3">

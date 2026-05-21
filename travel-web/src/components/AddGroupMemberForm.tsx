@@ -19,7 +19,7 @@ export function AddGroupMemberForm({ groupId }: { groupId: number }) {
     <form action={formAction} className="mt-5 rounded-md bg-slate-50 p-4">
       <input type="hidden" name="groupId" value={groupId} />
       <label htmlFor="memberEmail" className="block text-sm font-medium text-slate-700">
-        Добави участник по имейл
+        Добави към групата регистриран потребител чрез имейл адреса:
       </label>
       <div className="mt-2 flex flex-col gap-3 sm:flex-row">
         <input
