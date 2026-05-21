@@ -47,6 +47,7 @@ export default async function TripPage({ params }: TripPageProps) {
     getTripParticipants(tripId),
     getTripComments(tripId),
   ]);
+  const participantsWithPreferences = participants.filter(hasPreferences);
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -74,6 +75,8 @@ export default async function TripPage({ params }: TripPageProps) {
           <InfoRow label="Група" value={trip.groupName} />
           <InfoRow label="Дати" value={`${trip.startDate} - ${trip.endDate}`} />
           <InfoRow label="Участници" value={String(trip.participantsCount)} />
+          <InfoRow label="Коментари" value={String(trip.commentsCount)} />
+          <InfoRow label="Предпочитания" value={String(trip.preferencesCount)} />
           <InfoRow
             label="Капацитет"
             value={trip.capacity?.toString() ?? "Без ограничение"}
@@ -162,18 +165,63 @@ export default async function TripPage({ params }: TripPageProps) {
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-bold tracking-tight text-slate-950">
-                Коментари
+                Предпочитания на участниците
               </h2>
               <p className="text-sm text-slate-600">
-                Обсъдете детайли, въпроси и идеи с групата.
+                Транспорт, настаняване и бележки, споделени от групата.
               </p>
             </div>
+            <span className="text-sm font-semibold text-slate-700">
+              {trip.preferencesCount}
+            </span>
+          </div>
+
+          <div className="mt-6 space-y-3">
+            {participantsWithPreferences.length > 0 ? (
+              participantsWithPreferences.map((participant) => (
+                <article
+                  key={participant.id}
+                  className="rounded-md bg-white p-4 shadow-sm ring-1 ring-slate-200"
+                >
+                  <h3 className="text-sm font-semibold text-slate-950">
+                    {participant.name}
+                  </h3>
+                  <dl className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
+                    <PreferenceItem
+                      label="Транспорт"
+                      value={participant.transportPreference}
+                    />
+                    <PreferenceItem
+                      label="Настаняване"
+                      value={participant.accommodationPreference}
+                    />
+                    <PreferenceItem label="Бележка" value={participant.note} />
+                  </dl>
+                </article>
+              ))
+            ) : (
+              <div className="rounded-md bg-white p-4 text-sm text-slate-600 ring-1 ring-slate-200">
+                Все още няма споделени предпочитания за това пътуване.
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
+          <p className="text-sm text-slate-600">
+            Обсъдете детайли, въпроси и идеи с групата.
+          </p>
+
+          <TripCommentForm tripId={trip.id} />
+
+          <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <h2 className="text-xl font-bold tracking-tight text-slate-950">
+              Коментари на участниците
+            </h2>
             <span className="text-sm font-semibold text-slate-700">
               {comments.length}
             </span>
           </div>
-
-          <TripCommentForm tripId={trip.id} />
 
           <div className="mt-6 space-y-3">
             {comments.length > 0 ? (
@@ -271,6 +319,35 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <dt>{label}</dt>
       <dd className="text-right font-semibold text-slate-950">{value}</dd>
     </div>
+  );
+}
+
+function PreferenceItem({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) {
+  return (
+    <div>
+      <dt className="font-medium text-slate-500">{label}</dt>
+      <dd className="mt-1 whitespace-pre-wrap font-semibold text-slate-950">
+        {value?.trim() || "Не е зададено"}
+      </dd>
+    </div>
+  );
+}
+
+function hasPreferences(participant: {
+  transportPreference?: string | null;
+  accommodationPreference?: string | null;
+  note?: string | null;
+}) {
+  return Boolean(
+    participant.transportPreference?.trim() ||
+      participant.accommodationPreference?.trim() ||
+      participant.note?.trim(),
   );
 }
 

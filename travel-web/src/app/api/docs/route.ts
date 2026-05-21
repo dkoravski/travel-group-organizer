@@ -75,7 +75,7 @@ export function GET() {
         <p>Lists trips from the authenticated user's groups. <code>pageSize</code> is capped at 50.</p>
 
         <p><span class="method">GET</span> <code>/api/trips/{id}</code></p>
-        <p>Returns one trip with capacity, joined state, and the authenticated user's guest count.</p>
+        <p>Returns one trip with capacity, joined state, the authenticated user's guest count, and all comments visible to group members.</p>
       </section>
 
       <section>

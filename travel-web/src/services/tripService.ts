@@ -62,6 +62,21 @@ export async function getAllTrips(userId: number, onlyMyGroups = true) {
       createdBy: trips.createdBy,
       groupName: travelGroups.name,
       participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
+      commentsCount: sql<number>`(
+        select count(*)
+        from ${tripComments}
+        where ${tripComments.tripId} = ${trips.id}
+      )`,
+      preferencesCount: sql<number>`(
+        select count(*)
+        from ${tripParticipants} participant_preferences
+        where participant_preferences.trip_id = ${trips.id}
+          and (
+            nullif(trim(participant_preferences.transport_preference), '') is not null
+            or nullif(trim(participant_preferences.accommodation_preference), '') is not null
+            or nullif(trim(participant_preferences.note), '') is not null
+          )
+      )`,
       isJoined: sql<boolean>`exists (
         select 1
         from ${tripParticipants} user_participation
@@ -87,6 +102,8 @@ export async function getAllTrips(userId: number, onlyMyGroups = true) {
   return rows.map((row) => ({
     ...row,
     participantsCount: Number(row.participantsCount),
+    commentsCount: Number(row.commentsCount),
+    preferencesCount: Number(row.preferencesCount),
   }));
 }
 
@@ -176,6 +193,21 @@ export async function getTripDetails(tripId: number, userId: number) {
       updatedAt: trips.updatedAt,
       groupName: travelGroups.name,
       participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
+      commentsCount: sql<number>`(
+        select count(*)
+        from ${tripComments}
+        where ${tripComments.tripId} = ${trips.id}
+      )`,
+      preferencesCount: sql<number>`(
+        select count(*)
+        from ${tripParticipants} participant_preferences
+        where participant_preferences.trip_id = ${trips.id}
+          and (
+            nullif(trim(participant_preferences.transport_preference), '') is not null
+            or nullif(trim(participant_preferences.accommodation_preference), '') is not null
+            or nullif(trim(participant_preferences.note), '') is not null
+          )
+      )`,
       isGroupMember: sql<boolean>`exists (
         select 1
         from ${groupMembers} user_membership
@@ -228,6 +260,8 @@ export async function getTripDetails(tripId: number, userId: number) {
     ? {
         ...trip,
         participantsCount: Number(trip.participantsCount),
+        commentsCount: Number(trip.commentsCount),
+        preferencesCount: Number(trip.preferencesCount),
         userGuestsCount: trip.userGuestsCount ? Number(trip.userGuestsCount) : 0,
       } : null;
       }
@@ -239,13 +273,24 @@ export async function getTripParticipants(tripId: number) {
       name: users.name,
       email: users.email,
       guestsCount: tripParticipants.guestsCount,
+      transportPreference: tripParticipants.transportPreference,
+      accommodationPreference: tripParticipants.accommodationPreference,
+      note: tripParticipants.note,
     })
     .from(tripParticipants)
     .innerJoin(users, eq(users.id, tripParticipants.userId))
     .where(eq(tripParticipants.tripId, tripId))
     .orderBy(asc(users.name));
 
-  return rows.map((r) => ({ id: r.id, name: r.name, email: r.email, guestsCount: Number(r.guestsCount ?? 0) }));
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    email: r.email,
+    guestsCount: Number(r.guestsCount ?? 0),
+    transportPreference: r.transportPreference,
+    accommodationPreference: r.accommodationPreference,
+    note: r.note,
+  }));
 }
 
 export async function getTripComments(tripId: number) {

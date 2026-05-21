@@ -87,6 +87,14 @@ export default async function TripsPage({
                     <dt>Участници</dt>
                     <dd className="font-medium text-slate-950">{trip.participantsCount}</dd>
                   </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>Коментари</dt>
+                    <dd className="font-medium text-slate-950">{trip.commentsCount}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>Предпочитания</dt>
+                    <dd className="font-medium text-slate-950">{trip.preferencesCount}</dd>
+                  </div>
                 </dl>
 
                 <Link

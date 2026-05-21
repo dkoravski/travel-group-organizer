@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { getApiUser } from "@/lib/api/auth";
 import { apiError, apiOk } from "@/lib/api/responses";
 import { parseTripId } from "@/lib/api/trips";
-import { getTripDetails } from "@/services/tripService";
+import { getTripComments, getTripDetails } from "@/services/tripService";
 
 type RouteContext = {
   params: Promise<{
@@ -31,5 +31,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     return apiError("Trip not found.", 404);
   }
 
-  return apiOk({ data: trip });
+  const comments = await getTripComments(tripId);
+
+  return apiOk({
+    data: {
+      ...trip,
+      comments,
+    },
+  });
 }
