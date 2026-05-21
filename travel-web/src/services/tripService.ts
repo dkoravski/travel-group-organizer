@@ -75,6 +75,7 @@ export async function updateTrip(input: UpdateTripInput, userId: number) {
       meetingPoint: input.meetingPoint || null,
       capacity: input.capacity ?? null,
       estimatedBudget: input.estimatedBudget || null,
+      canceled: false,
       updatedAt: new Date(),
     })
     .where(

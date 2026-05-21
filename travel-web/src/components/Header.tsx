@@ -30,6 +30,12 @@ export async function Header() {
           >
             Начало
           </Link>
+          <Link
+            href="/about"
+            className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
+          >
+            За приложението
+          </Link>
           {currentUser ? (
             <div className="flex flex-wrap items-center gap-3">
               <Link

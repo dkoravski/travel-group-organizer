@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sessionCookieName } from "@/lib/auth-constants";
 import { apiCorsHeaders, applyApiCorsHeaders } from "@/lib/api/cors";
 
-const publicRoutes = new Set(["/", "/login", "/register"]);
+const publicRoutes = new Set(["/", "/about", "/login", "/register"]);
 const authRoutes = new Set(["/login", "/register"]);
 
 function getJwtSecretKey() {
