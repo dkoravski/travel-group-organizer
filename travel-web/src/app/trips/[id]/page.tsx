@@ -326,7 +326,7 @@ export default async function TripPage({ params }: TripPageProps) {
                 type="submit"
                 className="h-10 w-full cursor-pointer rounded-md border border-amber-200 bg-amber-50 px-4 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 sm:w-auto"
               >
-                Отмени
+                Отмени пътуването
               </button>
             </form>
           ) : null}
@@ -339,7 +339,7 @@ export default async function TripPage({ params }: TripPageProps) {
                 type="submit"
                 className="h-10 w-full cursor-pointer rounded-md bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 sm:w-auto"
               >
-                Изтрий
+                Изтрий пътуването
               </button>
             </form>
           ) : null}

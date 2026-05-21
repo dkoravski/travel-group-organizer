@@ -114,7 +114,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
                   <p className="text-sm text-slate-600">{member.email}</p>
                 </div>
                 <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                  {member.role}
+                  {formatGroupRole(member.role)}
                 </span>
                 {canManageGroup && member.role === "member" ? (
                   <form action={removeGroupMemberAction}>
@@ -194,4 +194,8 @@ export default async function GroupPage({ params }: GroupPageProps) {
       </main>
     </div>
   );
+}
+
+function formatGroupRole(role: "member" | "manager") {
+  return role === "manager" ? "Мениджър" : "Член";
 }
