@@ -10,9 +10,10 @@ export type DashboardGroup = {
 
 type DashboardGroupCardProps = {
   group: DashboardGroup;
+  from?: string;
 };
 
-export function DashboardGroupCard({ group }: DashboardGroupCardProps) {
+export function DashboardGroupCard({ group, from }: DashboardGroupCardProps) {
   const roleLabel = group.currentUserRole === "manager" ? "Мениджър" : "Член";
 
   return (
@@ -37,7 +38,7 @@ export function DashboardGroupCard({ group }: DashboardGroupCardProps) {
           членове
         </p>
         <Link
-          href={`/groups/${group.id}`}
+          href={`/groups/${group.id}${from ? `?from=${from}` : ""}`}
           className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-emerald-700"
         >
           Виж групата

@@ -22,8 +22,12 @@ export default async function TripsPage({
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="mb-4">
-        <Link href="/dashboard" className="text-sm font-semibold text-emerald-700 hover:text-emerald-800">
-          Назад към Моето табло
+        <Link
+          href="/dashboard"
+          aria-label="Назад към Моето табло"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-2xl leading-none text-slate-700 shadow-sm transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
+        >
+          &larr;
         </Link>
       </div>
       <header className="mb-8">

@@ -22,10 +22,7 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <header className="mb-8">
-        <p className="text-sm font-bold uppercase tracking-wide text-emerald-700">
-          Работно табло
-        </p>
-        <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950">
+        <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
           Моето табло
         </h1>
       </header>
@@ -40,7 +37,7 @@ export default async function DashboardPage() {
           {groups.length > 0 ? (
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               {groups.map((group) => (
-                <DashboardGroupCard key={group.id} group={group} />
+                <DashboardGroupCard key={group.id} group={group} from="dashboard" />
               ))}
             </div>
           ) : (
@@ -81,8 +78,8 @@ function SectionHeading({
   description: string;
 }) {
   return (
-    <div>
-      <h2 id={id} className="text-2xl font-black tracking-tight text-slate-950">
+      <div>
+      <h2 id={id} className="text-xl font-black tracking-tight text-slate-950">
         {title}
       </h2>
       <p className="mt-1 text-sm text-slate-600">{description}</p>

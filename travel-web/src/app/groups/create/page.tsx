@@ -1,21 +1,39 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createGroupAction } from "@/app/groups/actions";
 import { getCurrentUser } from "@/lib/auth";
 
-export default async function CreateGroupPage() {
+type CreateGroupPageProps = {
+  searchParams: Promise<{
+    from?: string;
+  }>;
+};
+
+export default async function CreateGroupPage({ searchParams }: CreateGroupPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     redirect("/login?redirectTo=/groups/create");
   }
 
+  const { from } = await searchParams;
+  const backHref = from === "manager" ? "/manager" : "/dashboard";
+  const backLabel =
+    from === "manager"
+      ? "Назад към мениджърския панел"
+      : "Назад към Моето табло";
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <header className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-          Бързо действие
-        </p>
+        <Link
+          href={backHref}
+          aria-label={backLabel}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-2xl leading-none text-slate-700 shadow-sm transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
+        >
+          &larr;
+        </Link>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
           Създаване на група
         </h1>

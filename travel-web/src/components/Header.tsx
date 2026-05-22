@@ -1,11 +1,9 @@
 import Link from "next/link";
 
+import { ActiveNavLink } from "@/components/ActiveNavLink";
 import { LogoutButton } from "@/components/LogoutButton";
 import { getCurrentUser } from "@/lib/auth";
 import { userHasManagedGroups } from "@/services/groupService";
-
-const navLinkClass =
-  "rounded-full px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/20 hover:text-white";
 
 export async function Header() {
   const currentUser = await getCurrentUser();
@@ -30,21 +28,21 @@ export async function Header() {
           aria-label="Основна навигация"
           className="flex flex-wrap items-center gap-2 rounded-full border border-white/20 bg-white/10 p-1"
         >
-          <Link href="/" className={navLinkClass}>
+          <ActiveNavLink href="/">
             Начало
-          </Link>
-          <Link href="/about" className={navLinkClass}>
+          </ActiveNavLink>
+          <ActiveNavLink href="/about">
             За приложението
-          </Link>
+          </ActiveNavLink>
           {currentUser ? (
             <>
-              <Link href="/dashboard" className={navLinkClass}>
+              <ActiveNavLink href="/dashboard">
                 Моето табло
-              </Link>
+              </ActiveNavLink>
               {hasManagerAccess ? (
-                <Link href="/manager" className={navLinkClass}>
+                <ActiveNavLink href="/manager">
                   Мениджърски панел
-                </Link>
+                </ActiveNavLink>
               ) : null}
               <div className="hidden px-3 text-sm leading-tight text-slate-100 sm:block">
                 <span className="block font-semibold text-white">
@@ -54,19 +52,19 @@ export async function Header() {
                   {currentUser.email}
                 </span>
               </div>
-              <Link href="/profile" className={navLinkClass}>
+              <ActiveNavLink href="/profile">
                 Профил
-              </Link>
+              </ActiveNavLink>
               <LogoutButton />
             </>
           ) : (
             <>
-              <Link href="/login" className={navLinkClass}>
+              <ActiveNavLink href="/login">
                 Вход
-              </Link>
-              <Link href="/register" className={navLinkClass}>
+              </ActiveNavLink>
+              <ActiveNavLink href="/register">
                 Регистрация
-              </Link>
+              </ActiveNavLink>
             </>
           )}
         </nav>

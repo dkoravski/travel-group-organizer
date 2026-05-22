@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { updateTripAction } from "@/app/trips/actions";
+import { BackArrowButton } from "@/components/BackArrowButton";
 import { getCurrentUser } from "@/lib/auth";
 import { getManagedGroups } from "@/services/groupService";
 import { getTripDetails } from "@/services/tripService";
@@ -37,17 +37,12 @@ export default async function EditTripPage({ params }: EditTripPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <Link
-        href={`/trips/${trip.id}`}
-        className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
-      >
-        Назад към пътуването
-      </Link>
+      <BackArrowButton
+        fallbackHref={`/trips/${trip.id}`}
+        label="Назад към предишната страница"
+      />
 
       <header className="mt-6 mb-8">
-        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-          Мениджърски панел
-        </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
           Редакция на пътуване
         </h1>

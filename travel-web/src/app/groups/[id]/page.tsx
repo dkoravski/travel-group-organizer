@@ -16,9 +16,12 @@ type GroupPageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    from?: string;
+  }>;
 };
 
-export default async function GroupPage({ params }: GroupPageProps) {
+export default async function GroupPage({ params, searchParams }: GroupPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -38,6 +41,9 @@ export default async function GroupPage({ params }: GroupPageProps) {
     notFound();
   }
 
+  const { from } = await searchParams;
+  const showDashboardBack = from === "dashboard";
+
   const group = await getGroupDetails(groupId);
 
   if (!group) {
@@ -53,16 +59,17 @@ export default async function GroupPage({ params }: GroupPageProps) {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <Link
-        href="/dashboard"
-        className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+        href={showDashboardBack ? "/dashboard" : "/manager"}
+        aria-label={showDashboardBack ? "Назад към Моето табло" : "Назад към мениджърския панел"}
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-2xl leading-none text-slate-700 shadow-sm transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
       >
-        Назад към таблото
+        &larr;
       </Link>
 
       <header className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
               {group.name}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">

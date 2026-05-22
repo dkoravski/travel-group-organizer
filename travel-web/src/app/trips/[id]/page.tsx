@@ -8,6 +8,7 @@ import {
   joinTripAction,
   leaveTripAction,
 } from "@/app/trips/actions";
+import { BackArrowButton } from "@/components/BackArrowButton";
 import { ShareTripButton } from "@/components/ShareTripButton";
 import { TripCommentForm } from "@/components/TripCommentForm";
 import { TripGuestsForm } from "@/components/TripGuestsForm";
@@ -53,12 +54,10 @@ export default async function TripPage({ params }: TripPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <Link
-        href="/trips"
-        className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
-      >
-        Назад към пътуванията
-      </Link>
+      <BackArrowButton
+        fallbackHref="/trips"
+        label="Назад към предишната страница"
+      />
 
       <article className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

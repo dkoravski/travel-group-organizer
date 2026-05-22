@@ -5,14 +5,26 @@ import { AddGroupMemberForm } from "@/components/AddGroupMemberForm";
 import { getCurrentUser } from "@/lib/auth";
 import { getManagedGroups } from "@/services/groupService";
 
-export default async function ManagerPanelPage() {
+type ManagerPanelPageProps = {
+  searchParams: Promise<{
+    from?: string;
+  }>;
+};
+
+export default async function ManagerPanelPage({
+  searchParams,
+}: ManagerPanelPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     redirect("/login?redirectTo=/manager");
   }
 
-  const managedGroups = await getManagedGroups(currentUser.id);
+  const [{ from }, managedGroups] = await Promise.all([
+    searchParams,
+    getManagedGroups(currentUser.id),
+  ]);
+  const showDashboardBack = from === "dashboard";
 
   if (managedGroups.length === 0) {
     redirect("/dashboard");
@@ -20,12 +32,18 @@ export default async function ManagerPanelPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      {showDashboardBack ? (
+        <Link
+          href="/dashboard"
+          aria-label="Назад към Моето табло"
+          className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-2xl leading-none text-slate-700 shadow-sm transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
+        >
+          &larr;
+        </Link>
+      ) : null}
       <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-            Мениджърски достъп
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+          <h1 className="mt-2 text-xl font-bold tracking-tight text-slate-950 sm:text-1xl">
             Мениджърски панел
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
@@ -33,12 +51,20 @@ export default async function ManagerPanelPage() {
             пътувания, преглед на участници и модериране на груповото съдържание.
           </p>
         </div>
-        <Link
-          href="/trips/create"
-          className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-        >
-          Създай пътуване
-        </Link>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="/groups/create?from=manager"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-emerald-200 bg-white px-5 text-sm font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-50"
+          >
+            Създай група
+          </Link>
+          <Link
+            href="/trips/create"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+          >
+            Създай пътуване
+          </Link>
+        </div>
       </header>
 
       <main className="grid gap-4 md:grid-cols-2">
@@ -49,9 +75,6 @@ export default async function ManagerPanelPage() {
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                  {group.visibility === "public" ? "Публична" : "Частна"} група
-                </p>
                 <h2 className="mt-2 text-xl font-bold tracking-tight text-slate-950">
                   {group.name}
                 </h2>
@@ -90,12 +113,6 @@ export default async function ManagerPanelPage() {
                 className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
               >
                 Управлявай групата
-              </Link>
-              <Link
-                href={`/trips/create?groupId=${group.id}`}
-                className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
-              >
-                Ново пътуване
               </Link>
             </div>
           </article>

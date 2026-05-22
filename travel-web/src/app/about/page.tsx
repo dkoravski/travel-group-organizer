@@ -29,9 +29,6 @@ export default function AboutPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-          За приложението
-        </p>
         <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
           Travel Group Organizer помага на групите да планират пътувания без хаос.
         </h1>

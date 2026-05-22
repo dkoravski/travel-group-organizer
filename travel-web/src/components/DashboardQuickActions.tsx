@@ -9,8 +9,8 @@ export function DashboardQuickActions({
     { label: "Създай група", href: "/groups/create" },
     ...(hasManagerAccess
       ? [
-          { label: "Мениджърски панел", href: "/manager" },
-          { label: "Създай пътуване", href: "/trips/create" },
+          { label: "Мениджърски панел", href: "/manager?from=dashboard" },
+          { label: "Създай пътуване", href: "/trips/create?from=dashboard" },
         ]
       : []),
     { label: "Разгледай пътувания", href: "/trips" },
@@ -22,12 +22,9 @@ export function DashboardQuickActions({
       className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm shadow-slate-900/5"
     >
       <div className="flex flex-col gap-1">
-        <p className="text-sm font-bold uppercase tracking-wide text-emerald-700">
-          Работни преки пътища
-        </p>
         <h2
           id="quick-actions-heading"
-          className="text-2xl font-black tracking-tight text-slate-950"
+          className="text-1xl font-black tracking-tight text-slate-950"
         >
           Бързи действия
         </h2>
