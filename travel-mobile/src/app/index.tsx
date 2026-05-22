@@ -1,96 +1,164 @@
-import { Link, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { BottomNav } from '@/components/BottomNav';
 import { useAuth } from '@/lib/auth-context';
 
-export default function HomeScreen() {
-  const { token, user, signOut } = useAuth();
+const highlights = [
+  { icon: 'people-outline', label: 'Групи', text: 'Организация на приятели и семейство.' },
+  { icon: 'calendar-outline', label: 'План', text: 'Дати, места, участници и коментари.' },
+  { icon: 'options-outline', label: 'Предпочитания', text: 'Транспорт, настаняване и бележки.' },
+] as const;
 
-  function handleLogout() {
-    signOut();
-    router.replace('/');
-  }
+export default function HomeScreen() {
+  const { token, user } = useAuth();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Добре дошли в Travel Group Organizer</Text>
-      <Text style={styles.subtitle}>
-        Планирайте и управлявайте групови пътувания с приятели, семейство и общности.
-      </Text>
-
-      {token ? (
-        <View style={styles.actions}>
-          <Text style={styles.userText}>Влезли сте като {user?.name || user?.email}.</Text>
-          <Link href="/trips" style={styles.secondaryLink}>
-            Моите пътувания
-          </Link>
-          <Pressable style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Изход</Text>
-          </Pressable>
+    <View style={styles.screen}>
+      <View style={styles.container}>
+        <View style={styles.titleBlock}>
+          <Text style={styles.kicker}>Travel Group Organizer</Text>
+          <Text style={styles.title}>Планирайте групови пътувания без хаос.</Text>
         </View>
-      ) : (
-        <Link href="/login" style={styles.loginLink}>
-          Вход
-        </Link>
-      )}
+
+        <View style={styles.contentBlock}>
+          <Text style={styles.subtitle}>
+            Управлявайте маршрути, участници, гости, коментари и лични предпочитания.
+          </Text>
+
+          {token ? (
+            <View style={styles.actions}>
+              <Text style={styles.userText}>Влезли сте като {user?.name || user?.email}.</Text>
+              <Pressable style={styles.primaryButton} onPress={() => router.push('/trips')}>
+                <Text style={styles.primaryButtonText}>Моите пътувания</Text>
+                <Ionicons name="arrow-forward" size={17} color="#ffffff" />
+              </Pressable>
+            </View>
+          ) : null}
+
+          <View style={styles.highlights}>
+            {highlights.map((item) => (
+              <View key={item.label} style={styles.highlightCard}>
+                <View style={styles.highlightIcon}>
+                  <Ionicons name={item.icon} size={19} color="#0f766e" />
+                </View>
+                <View style={styles.highlightCopy}>
+                  <Text style={styles.highlightTitle}>{item.label}</Text>
+                  <Text style={styles.highlightText}>{item.text}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+      <BottomNav />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   actions: {
-    alignItems: 'flex-start',
-    gap: 14,
-    marginTop: 32,
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 12,
   },
   container: {
     flex: 1,
+    paddingBottom: 94,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+  contentBlock: {
+    marginTop: 34,
+    maxWidth: 620,
+  },
+  highlightCard: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderColor: '#e0e5e8',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 62,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  highlightCopy: {
+    flex: 1,
+  },
+  highlightIcon: {
+    alignItems: 'center',
+    backgroundColor: '#dff3ef',
+    borderRadius: 8,
+    height: 34,
     justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#f7f7f2',
+    width: 34,
   },
-  loginLink: {
-    alignSelf: 'flex-start',
-    marginTop: 32,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#0f766e',
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
+  highlightText: {
+    color: '#5c6873',
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 1,
   },
-  logoutButton: {
-    borderRadius: 8,
-    backgroundColor: '#b42318',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+  highlightTitle: {
+    color: '#19212a',
+    fontSize: 15,
+    fontWeight: '900',
   },
-  logoutText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
+  highlights: {
+    gap: 8,
+    marginTop: 16,
   },
-  secondaryLink: {
+  kicker: {
     color: '#0f766e',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0,
+    textTransform: 'uppercase',
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: '#0f766e',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 7,
+    justifyContent: 'center',
+    minHeight: 42,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  primaryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  screen: {
+    backgroundColor: '#f6f7f3',
+    flex: 1,
   },
   subtitle: {
-    marginTop: 12,
-    maxWidth: 520,
     color: '#46515a',
-    fontSize: 17,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 21,
+    maxWidth: 560,
   },
   title: {
     color: '#19212a',
-    fontSize: 30,
-    fontWeight: '800',
-    lineHeight: 38,
+    fontSize: 29,
+    fontWeight: '900',
+    lineHeight: 35,
+    marginTop: 6,
+  },
+  titleBlock: {
+    maxWidth: 620,
   },
   userText: {
     color: '#46515a',
-    fontSize: 16,
+    fontSize: 13,
+    width: '100%',
   },
 });

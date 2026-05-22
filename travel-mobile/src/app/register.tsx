@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BottomNav } from '@/components/BottomNav';
-import { login } from '@/lib/api';
+import { register } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
 function navigateAfterSignIn() {
@@ -13,16 +13,27 @@ function navigateAfterSignIn() {
   }, 0);
 }
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const { signIn } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleLogin() {
-    if (!email.trim() || !password) {
-      setError('Въведете имейл и парола.');
+  async function handleRegister() {
+    if (name.trim().length < 2) {
+      setError('Въведете име с поне 2 символа.');
+      return;
+    }
+
+    if (!email.trim().includes('@')) {
+      setError('Въведете валиден имейл адрес.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Паролата трябва да е поне 6 символа.');
       return;
     }
 
@@ -30,11 +41,11 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      const result = await login(email, password);
+      const result = await register(name, email, password);
       signIn(result.token, result.user);
       navigateAfterSignIn();
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Неуспешен вход.');
+      setError(caughtError instanceof Error ? caughtError.message : 'Неуспешна регистрация.');
     } finally {
       setIsSubmitting(false);
     }
@@ -45,12 +56,24 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.form}>
           <View style={styles.iconBadge}>
-            <Ionicons name="log-in" size={24} color="#0f766e" />
+            <Ionicons name="person-add" size={24} color="#0f766e" />
           </View>
-          <Text style={styles.title}>Вход в профила</Text>
+          <Text style={styles.title}>Създаване на профил</Text>
           <Text style={styles.subtitle}>
-            Влезте, за да управлявате вашите групови пътувания и предпочитания.
+            Регистрирайте се, за да участвате в групови пътувания и да запазвате предпочитания.
           </Text>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Име</Text>
+            <TextInput
+              autoComplete="name"
+              editable={!isSubmitting}
+              onChangeText={setName}
+              placeholder="Иван Иванов"
+              style={styles.input}
+              value={name}
+            />
+          </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>Имейл</Text>
@@ -69,10 +92,10 @@ export default function LoginScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Парола</Text>
             <TextInput
-              autoComplete="password"
+              autoComplete="new-password"
               editable={!isSubmitting}
               onChangeText={setPassword}
-              placeholder="Вашата парола"
+              placeholder="Минимум 6 символа"
               secureTextEntry
               style={styles.input}
               value={password}
@@ -84,13 +107,13 @@ export default function LoginScreen() {
           <Pressable
             disabled={isSubmitting}
             style={[styles.button, isSubmitting && styles.buttonDisabled]}
-            onPress={handleLogin}
+            onPress={handleRegister}
           >
             {isSubmitting ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
               <>
-                <Text style={styles.buttonText}>Вход</Text>
+                <Text style={styles.buttonText}>Регистрация</Text>
                 <Ionicons name="arrow-forward" size={18} color="#ffffff" />
               </>
             )}

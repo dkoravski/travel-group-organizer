@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 
 import type { ApiUser } from './api';
@@ -10,6 +10,7 @@ type AuthContextValue = {
   token: string | null;
   user: ApiUser | null;
   signIn: (token: string, user: ApiUser) => void;
+  updateUser: (user: ApiUser) => void;
   signOut: () => void;
 };
 
@@ -19,6 +20,44 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<ApiUser | null>(null);
   const [isRestoring, setIsRestoring] = useState(true);
+
+  const signIn = useCallback((nextToken: string, nextUser: ApiUser) => {
+    setToken(nextToken);
+    setUser(nextUser);
+
+    if (Platform.OS === 'web') {
+      window.localStorage.setItem(
+        storedAuthKey,
+        JSON.stringify({ token: nextToken, user: nextUser }),
+      );
+    }
+  }, []);
+
+  const updateUser = useCallback((nextUser: ApiUser) => {
+    setUser(nextUser);
+
+    if (Platform.OS === 'web') {
+      setToken((currentToken) => {
+        if (currentToken) {
+          window.localStorage.setItem(
+            storedAuthKey,
+            JSON.stringify({ token: currentToken, user: nextUser }),
+          );
+        }
+
+        return currentToken;
+      });
+    }
+  }, []);
+
+  const signOut = useCallback(() => {
+    setToken(null);
+    setUser(null);
+
+    if (Platform.OS === 'web') {
+      window.localStorage.removeItem(storedAuthKey);
+    }
+  }, []);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -47,27 +86,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isRestoring,
       token,
       user,
-      signIn: (nextToken: string, nextUser: ApiUser) => {
-        setToken(nextToken);
-        setUser(nextUser);
-
-        if (Platform.OS === 'web') {
-          window.localStorage.setItem(
-            storedAuthKey,
-            JSON.stringify({ token: nextToken, user: nextUser }),
-          );
-        }
-      },
-      signOut: () => {
-        setToken(null);
-        setUser(null);
-
-        if (Platform.OS === 'web') {
-          window.localStorage.removeItem(storedAuthKey);
-        }
-      },
+      signIn,
+      updateUser,
+      signOut,
     }),
-    [isRestoring, token, user],
+    [isRestoring, signIn, signOut, token, updateUser, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

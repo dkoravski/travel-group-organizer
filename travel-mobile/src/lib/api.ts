@@ -20,6 +20,8 @@ export type LoginResponse = {
   user: ApiUser;
 };
 
+export type RegisterResponse = LoginResponse;
+
 export type TripSummary = {
   id: number;
   title: string;
@@ -32,6 +34,17 @@ export type TripSummary = {
   commentsCount: number;
   preferencesCount: number;
   isJoined: boolean;
+};
+
+export type UserGroup = {
+  id: number;
+  name: string;
+  description: string | null;
+  visibility: 'public' | 'private';
+  role: 'member' | 'manager';
+  createdAt: string;
+  membersCount: number;
+  tripsCount: number;
 };
 
 export type TripDetails = TripSummary & {
@@ -108,8 +121,16 @@ async function readApiResponse<T>(response: Response, fallbackError: string) {
   return body as T;
 }
 
+async function apiFetch(input: string, init?: RequestInit) {
+  try {
+    return await fetch(input, init);
+  } catch {
+    throw new Error('Няма връзка с API сървъра. Проверете EXPO_PUBLIC_API_BASE_URL и дали backend-ът работи.');
+  }
+}
+
 export async function login(email: string, password: string) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -120,8 +141,76 @@ export async function login(email: string, password: string) {
   return readApiResponse<LoginResponse>(response, 'Неуспешен вход.');
 }
 
+export async function register(name: string, email: string, password: string) {
+  const response = await apiFetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, email, password }),
+  });
+
+  return readApiResponse<RegisterResponse>(response, 'Неуспешна регистрация.');
+}
+
+export async function getProfile(token: string) {
+  const response = await apiFetch(`${API_BASE_URL}/profile`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const body = await readApiResponse<{ data: ApiUser }>(
+    response,
+    'Профилът не може да бъде зареден.',
+  );
+
+  return body.data;
+}
+
+export async function updateProfileName(token: string, name: string) {
+  const response = await apiFetch(`${API_BASE_URL}/profile`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name }),
+  });
+
+  const body = await readApiResponse<{ data: ApiUser }>(
+    response,
+    'Името не може да бъде обновено.',
+  );
+
+  return body.data;
+}
+
+export async function changeProfilePassword(
+  token: string,
+  passwords: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  },
+) {
+  const response = await apiFetch(`${API_BASE_URL}/profile/password`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(passwords),
+  });
+
+  return readApiResponse<{ message: string }>(
+    response,
+    'Паролата не може да бъде сменена.',
+  );
+}
+
 export async function getTrips(token: string) {
-  const response = await fetch(`${API_BASE_URL}/trips?page=1&pageSize=50`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips?page=1&pageSize=50`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -130,8 +219,23 @@ export async function getTrips(token: string) {
   return readApiResponse<TripsPage>(response, 'Пътуванията не могат да бъдат заредени.');
 }
 
+export async function getGroups(token: string) {
+  const response = await apiFetch(`${API_BASE_URL}/groups`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const body = await readApiResponse<{ data: UserGroup[] }>(
+    response,
+    'Групите не могат да бъдат заредени.',
+  );
+
+  return body.data;
+}
+
 export async function getTripDetails(token: string, tripId: number) {
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -151,7 +255,7 @@ async function mutateTrip(
   action: 'join' | 'leave' | 'guests',
   guestsCount?: number,
 ) {
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/${action}`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/${action}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -181,7 +285,7 @@ export function updateTripGuests(token: string, tripId: number, guestsCount: num
 }
 
 export async function getTripPreferences(token: string, tripId: number) {
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/preferences`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/preferences`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -204,7 +308,7 @@ export async function saveTripPreferences(
     note: string;
   },
 ) {
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/preferences`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/preferences`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -222,7 +326,7 @@ export async function saveTripPreferences(
 }
 
 export async function getTripComments(token: string, tripId: number) {
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/comment`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/comment`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -237,7 +341,7 @@ export async function getTripComments(token: string, tripId: number) {
 }
 
 export async function createTripComment(token: string, tripId: number, content: string) {
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/comment`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/comment`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -260,7 +364,7 @@ export async function updateTripComment(
   commentId: number,
   content: string,
 ) {
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/comment/${commentId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/comment/${commentId}`, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,

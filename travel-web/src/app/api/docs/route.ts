@@ -61,6 +61,14 @@ export function GET() {
 }</pre>
         <p>Returns a JWT bearer token. Send it on protected routes:</p>
         <pre>Authorization: Bearer &lt;token&gt;</pre>
+
+        <p><span class="method">POST</span> <code>/api/auth/register</code></p>
+        <pre>{
+  "name": "Ivan Dimitrov",
+  "email": "ivan@example.com",
+  "password": "pass123"
+}</pre>
+        <p>Creates a user and returns the same JWT bearer token response as login.</p>
       </section>
 
       <section>
@@ -70,12 +78,24 @@ export function GET() {
       </section>
 
       <section>
+        <h2>Profile</h2>
+        <p><span class="method">GET</span> <code>/api/profile</code></p>
+        <p>Returns the authenticated user's profile.</p>
+      </section>
+
+      <section>
         <h2>Trips</h2>
         <p><span class="method">GET</span> <code>/api/trips?page=1&amp;pageSize=10</code></p>
         <p>Lists trips from the authenticated user's groups. <code>pageSize</code> is capped at 50.</p>
 
         <p><span class="method">GET</span> <code>/api/trips/{id}</code></p>
         <p>Returns one trip with capacity, joined state, the authenticated user's guest count, and all comments visible to group members.</p>
+      </section>
+
+      <section>
+        <h2>Groups</h2>
+        <p><span class="method">GET</span> <code>/api/groups</code></p>
+        <p>Lists the authenticated user's travel groups with role, members count, and trips count.</p>
       </section>
 
       <section>

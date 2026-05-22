@@ -154,6 +154,39 @@ export async function getUserGroups(userId: number) {
     .where(eq(groupMembers.userId, userId));
 }
 
+export async function getUserGroupsOverview(userId: number) {
+  return db
+    .select({
+      id: travelGroups.id,
+      name: travelGroups.name,
+      description: travelGroups.description,
+      visibility: travelGroups.visibility,
+      role: groupMembers.role,
+      createdAt: travelGroups.createdAt,
+      membersCount: sql<number>`(
+        select count(*)
+        from ${groupMembers} all_members
+        where all_members.group_id = ${travelGroups.id}
+      )`,
+      tripsCount: sql<number>`(
+        select count(*)
+        from ${trips}
+        where ${trips.groupId} = ${travelGroups.id}
+      )`,
+    })
+    .from(groupMembers)
+    .innerJoin(travelGroups, eq(travelGroups.id, groupMembers.groupId))
+    .where(eq(groupMembers.userId, userId))
+    .orderBy(asc(travelGroups.name))
+    .then((rows) =>
+      rows.map((row) => ({
+        ...row,
+        membersCount: Number(row.membersCount),
+        tripsCount: Number(row.tripsCount),
+      })),
+    );
+}
+
 export async function getManagedGroups(userId: number) {
   return db
     .select({

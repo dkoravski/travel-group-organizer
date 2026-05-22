@@ -282,9 +282,13 @@ export default function TripDetailsScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.content}>
         <View style={styles.statusRow}>
-          <Text style={[styles.status, trip.canceled && styles.canceledStatus]}>
-            {trip.canceled ? 'Отменено' : trip.isJoined ? 'Участвате' : 'В групата'}
-          </Text>
+          {trip.canceled || trip.isJoined ? (
+            <Text style={[styles.status, trip.canceled && styles.canceledStatus]}>
+              {trip.canceled ? 'Отменено' : 'Участвате'}
+            </Text>
+          ) : (
+            <View />
+          )}
           {trip.isJoined ? (
             <Pressable
               disabled={isSaving}
