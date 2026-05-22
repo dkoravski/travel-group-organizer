@@ -84,7 +84,7 @@ export default async function TripPage({ params }: TripPageProps) {
           />
           <InfoRow
             label="Ориентировъчен бюджет"
-            value={trip.estimatedBudget ? `${trip.estimatedBudget} лв.` : "Не е зададен"}
+            value={trip.estimatedBudget ? `${trip.estimatedBudget} €` : "Не е зададен"}
           />
           <InfoRow
             label="Място на среща"

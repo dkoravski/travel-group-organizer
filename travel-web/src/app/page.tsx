@@ -120,7 +120,7 @@ function UpcomingTripCard({
         <InfoTile label="Участници" value={String(trip.participantsCount)} />
         <InfoTile
           label="Бюджет"
-          value={trip.estimatedBudget ? `${trip.estimatedBudget} лв.` : "Не е зададен"}
+          value={trip.estimatedBudget ? `${trip.estimatedBudget} €` : "Не е зададен"}
         />
       </dl>
       <p className="mt-6 text-sm font-bold text-emerald-700 transition group-hover:text-emerald-800">
