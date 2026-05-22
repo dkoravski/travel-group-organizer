@@ -1,7 +1,7 @@
 [build]
-  base = "travel-web"
-  command = "npm install lightningcss-linux-x64-gnu@1.32.0 @tailwindcss/oxide-linux-x64-gnu@4.3.0 --no-save && npm run build"
-  publish = ".next"
+  base = "travel-mobile"
+  command = "npm run build"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "22"
