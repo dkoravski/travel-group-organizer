@@ -2,9 +2,10 @@ import { Platform } from 'react-native';
 
 const configuredApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-export const API_BASE_URL =
+export const API_BASE_URL = (
   configuredApiBaseUrl ||
-  (Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api');
+  (Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api')
+).replace(/\/$/, '');
 
 export type ApiUser = {
   id: number;
@@ -84,6 +85,29 @@ export type TripsPage = {
   totalPages: number;
 };
 
+async function readApiResponse<T>(response: Response, fallbackError: string) {
+  const contentType = response.headers.get('content-type') || '';
+  const isJson = contentType.includes('application/json');
+  const body = isJson ? await response.json() : await response.text();
+
+  if (!response.ok) {
+    const apiError =
+      isJson && typeof body === 'object' && body !== null && 'error' in body
+        ? String(body.error)
+        : null;
+
+    throw new Error(apiError || fallbackError);
+  }
+
+  if (!isJson) {
+    throw new Error(
+      'API адресът не връща JSON. Проверете EXPO_PUBLIC_API_BASE_URL и дали сочи към backend адрес, завършващ на /api.',
+    );
+  }
+
+  return body as T;
+}
+
 export async function login(email: string, password: string) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -93,13 +117,7 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
 
-  const body = await response.json();
-
-  if (!response.ok) {
-    throw new Error(body.error || 'Неуспешен вход.');
-  }
-
-  return body as LoginResponse;
+  return readApiResponse<LoginResponse>(response, 'Неуспешен вход.');
 }
 
 export async function getTrips(token: string) {
@@ -109,13 +127,7 @@ export async function getTrips(token: string) {
     },
   });
 
-  const body = await response.json();
-
-  if (!response.ok) {
-    throw new Error(body.error || 'Пътуванията не могат да бъдат заредени.');
-  }
-
-  return body as TripsPage;
+  return readApiResponse<TripsPage>(response, 'Пътуванията не могат да бъдат заредени.');
 }
 
 export async function getTripDetails(token: string, tripId: number) {
@@ -125,13 +137,12 @@ export async function getTripDetails(token: string, tripId: number) {
     },
   });
 
-  const body = await response.json();
+  const body = await readApiResponse<{ data: TripDetails }>(
+    response,
+    'Детайлите за пътуването не могат да бъдат заредени.',
+  );
 
-  if (!response.ok) {
-    throw new Error(body.error || 'Детайлите за пътуването не могат да бъдат заредени.');
-  }
-
-  return body.data as TripDetails;
+  return body.data;
 }
 
 async function mutateTrip(
@@ -149,13 +160,12 @@ async function mutateTrip(
     body: guestsCount === undefined ? undefined : JSON.stringify({ guestsCount }),
   });
 
-  const body = await response.json();
+  const body = await readApiResponse<{ data: TripDetails }>(
+    response,
+    'Пътуването не може да бъде обновено.',
+  );
 
-  if (!response.ok) {
-    throw new Error(body.error || 'Пътуването не може да бъде обновено.');
-  }
-
-  return body.data as TripDetails;
+  return body.data;
 }
 
 export function joinTrip(token: string, tripId: number, guestsCount = 0) {
@@ -177,13 +187,12 @@ export async function getTripPreferences(token: string, tripId: number) {
     },
   });
 
-  const body = await response.json();
+  const body = await readApiResponse<{ data: TripPreferences }>(
+    response,
+    'Предпочитанията не могат да бъдат заредени.',
+  );
 
-  if (!response.ok) {
-    throw new Error(body.error || 'Предпочитанията не могат да бъдат заредени.');
-  }
-
-  return body.data as TripPreferences;
+  return body.data;
 }
 
 export async function saveTripPreferences(
@@ -204,13 +213,12 @@ export async function saveTripPreferences(
     body: JSON.stringify(preferences),
   });
 
-  const body = await response.json();
+  const body = await readApiResponse<{ data: TripDetails }>(
+    response,
+    'Предпочитанията не могат да бъдат запазени.',
+  );
 
-  if (!response.ok) {
-    throw new Error(body.error || 'Предпочитанията не могат да бъдат запазени.');
-  }
-
-  return body.data as TripDetails;
+  return body.data;
 }
 
 export async function getTripComments(token: string, tripId: number) {
@@ -220,13 +228,12 @@ export async function getTripComments(token: string, tripId: number) {
     },
   });
 
-  const body = await response.json();
+  const body = await readApiResponse<{ data: TripComment[] }>(
+    response,
+    'Коментарите не могат да бъдат заредени.',
+  );
 
-  if (!response.ok) {
-    throw new Error(body.error || 'Коментарите не могат да бъдат заредени.');
-  }
-
-  return body.data as TripComment[];
+  return body.data;
 }
 
 export async function createTripComment(token: string, tripId: number, content: string) {
@@ -239,13 +246,12 @@ export async function createTripComment(token: string, tripId: number, content: 
     body: JSON.stringify({ content }),
   });
 
-  const body = await response.json();
+  const body = await readApiResponse<{ data: TripComment }>(
+    response,
+    'Коментарът не може да бъде добавен.',
+  );
 
-  if (!response.ok) {
-    throw new Error(body.error || 'Коментарът не може да бъде добавен.');
-  }
-
-  return body.data as TripComment;
+  return body.data;
 }
 
 export async function updateTripComment(
@@ -263,11 +269,10 @@ export async function updateTripComment(
     body: JSON.stringify({ content }),
   });
 
-  const body = await response.json();
+  const body = await readApiResponse<{ data: TripComment }>(
+    response,
+    'Коментарът не може да бъде редактиран.',
+  );
 
-  if (!response.ok) {
-    throw new Error(body.error || 'Коментарът не може да бъде редактиран.');
-  }
-
-  return body.data as TripComment;
+  return body.data;
 }
