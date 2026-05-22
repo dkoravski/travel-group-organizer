@@ -81,6 +81,18 @@ export function GET() {
         <h2>Profile</h2>
         <p><span class="method">GET</span> <code>/api/profile</code></p>
         <p>Returns the authenticated user's profile.</p>
+
+        <p><span class="method">PATCH</span> <code>/api/profile</code></p>
+        <pre>{ "name": "Ivan Dimitrov" }</pre>
+        <p>Updates the authenticated user's display name.</p>
+
+        <p><span class="method">PATCH</span> <code>/api/profile/password</code></p>
+        <pre>{
+  "currentPassword": "old-password",
+  "newPassword": "new-password",
+  "confirmPassword": "new-password"
+}</pre>
+        <p>Changes the authenticated user's password after validating the current password.</p>
       </section>
 
       <section>
