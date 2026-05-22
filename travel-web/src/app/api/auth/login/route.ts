@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return apiError("Invalid JSON body.", 400);
+    return apiError("Невалидни данни за вход.", 400);
   }
 
   const email =
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       : "";
 
   if (!email || !password) {
-    return apiError("Email and password are required.", 400);
+    return apiError("Въведете имейл и парола.", 400);
   }
 
   const [user] = await db
@@ -40,13 +40,13 @@ export async function POST(request: NextRequest) {
     .limit(1);
 
   if (!user) {
-    return apiError("Invalid email or password.", 401);
+    return apiError("Невалиден имейл или парола.", 401);
   }
 
   const passwordMatches = await verifyPassword(password, user.passwordHash);
 
   if (!passwordMatches) {
-    return apiError("Invalid email or password.", 401);
+    return apiError("Невалиден имейл или парола.", 401);
   }
 
   const token = await createAuthToken({

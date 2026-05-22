@@ -90,19 +90,19 @@ async function readApiResponse<T>(response: Response, fallbackError: string) {
   const isJson = contentType.includes('application/json');
   const body = isJson ? await response.json() : await response.text();
 
-  if (!response.ok) {
-    const apiError =
-      isJson && typeof body === 'object' && body !== null && 'error' in body
-        ? String(body.error)
-        : null;
-
-    throw new Error(apiError || fallbackError);
-  }
-
   if (!isJson) {
     throw new Error(
       'API адресът не връща JSON. Проверете EXPO_PUBLIC_API_BASE_URL и дали сочи към backend адрес, завършващ на /api.',
     );
+  }
+
+  if (!response.ok) {
+    const apiError =
+      typeof body === 'object' && body !== null && 'error' in body
+        ? String(body.error)
+        : null;
+
+    throw new Error(apiError || fallbackError);
   }
 
   return body as T;
