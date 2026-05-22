@@ -86,20 +86,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link
-          href="/register"
-          className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-        >
-          Създай профил
-        </Link>
-        <Link
-          href="/"
-          className="inline-flex h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
-        >
-          Към началото
-        </Link>
-      </div>
+      
 
       <section className="mt-8 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold tracking-tight text-slate-950">За контакти</h2>

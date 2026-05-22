@@ -39,7 +39,7 @@ export function DashboardGroupCard({ group, from }: DashboardGroupCardProps) {
         </p>
         <Link
           href={`/groups/${group.id}${from ? `?from=${from}` : ""}`}
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-emerald-700"
+          className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-900/20"
         >
           Виж групата
         </Link>

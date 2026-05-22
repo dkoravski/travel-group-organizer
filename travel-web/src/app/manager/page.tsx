@@ -60,7 +60,7 @@ export default async function ManagerPanelPage({
           </Link>
           <Link
             href="/trips/create"
-            className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-emerald-200 bg-white px-5 text-sm font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-50"
           >
             Създай пътуване
           </Link>
@@ -82,12 +82,7 @@ export default async function ManagerPanelPage({
                   {group.description ?? "Няма добавено описание за тази група."}
                 </p>
               </div>
-              <Link
-                href={`/groups/${group.id}`}
-                className="shrink-0 rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
-              >
-                Отвори
-              </Link>
+            
             </div>
 
             <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
@@ -110,9 +105,9 @@ export default async function ManagerPanelPage({
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href={`/groups/${group.id}`}
-                className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700 hover:shadow-emerald-900/20"
               >
-                Управлявай групата
+                Отвори
               </Link>
             </div>
           </article>

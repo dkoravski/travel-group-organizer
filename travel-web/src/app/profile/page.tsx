@@ -54,7 +54,7 @@ export default async function ProfilePage() {
         <section className="grid min-w-0 gap-5 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-900/5 xl:grid-cols-2">
           <div className="min-w-0">
             <h2 className="text-lg font-black tracking-tight text-slate-950">
-              Редакция на профил
+              Редакция на името
             </h2>
             <p className="mt-1 text-sm leading-5 text-slate-600">
               Можете да актуализирате показваното име, което се използва в

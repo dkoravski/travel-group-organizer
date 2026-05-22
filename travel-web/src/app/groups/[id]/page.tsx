@@ -173,7 +173,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                 <div className="mt-5 flex flex-wrap gap-2">
                   <Link
                     href={`/trips/${trip.id}`}
-                    className="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+                    className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700 hover:shadow-emerald-900/20"
                   >
                     Отвори
                   </Link>
