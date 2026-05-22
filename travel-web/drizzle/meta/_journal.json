@@ -8,6 +8,20 @@
       "when": 1779014734198,
       "tag": "0000_fat_spacker_dave",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779479575631,
+      "tag": "0001_jazzy_meltdown",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779481727379,
+      "tag": "0002_cool_risque",
+      "breakpoints": true
     }
   ]
 }

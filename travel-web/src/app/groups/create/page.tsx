@@ -88,24 +88,6 @@ export default async function CreateGroupPage({ searchParams }: CreateGroupPageP
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="visibility"
-            className="block text-sm font-medium text-slate-700"
-          >
-            Видимост
-          </label>
-          <select
-            id="visibility"
-            name="visibility"
-            defaultValue="private"
-            className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-          >
-            <option value="private">Частна</option>
-            <option value="public">Публична</option>
-          </select>
-        </div>
-
         <button
           type="submit"
           className="h-11 rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
