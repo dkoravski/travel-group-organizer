@@ -19,7 +19,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="cursor-pointer rounded-full px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+      className="w-full cursor-pointer rounded-full px-4 py-2 text-left text-sm font-semibold text-slate-100 transition hover:bg-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-70 lg:w-auto"
     >
       {pending ? "Излизане..." : "Изход"}
     </button>
