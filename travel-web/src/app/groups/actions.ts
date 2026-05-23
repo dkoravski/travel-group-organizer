@@ -30,7 +30,6 @@ export async function createGroupAction(formData: FormData) {
 
   const name = getStringValue(formData, "name");
   const description = getStringValue(formData, "description");
-  const imageUrl = getStringValue(formData, "imageUrl");
 
   if (!name) {
     throw new Error("Името на групата е задължително.");
@@ -39,7 +38,6 @@ export async function createGroupAction(formData: FormData) {
   const group = await createTravelGroup({
     name,
     description,
-    imageUrl,
     ownerId: currentUser.id,
     visibility: "private",
   });

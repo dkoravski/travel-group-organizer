@@ -79,11 +79,11 @@ export function MobileHeaderNav({
         id="main-navigation"
         aria-label="Основна навигация"
         className={[
-          "absolute left-4 right-4 top-[calc(100%+0.5rem)] z-50 rounded-2xl border border-white/20 bg-slate-800/95 p-2 shadow-xl shadow-slate-950/20 backdrop-blur lg:static lg:z-auto lg:flex lg:items-center lg:gap-2 lg:rounded-full lg:bg-white/10 lg:p-1 lg:shadow-none lg:backdrop-blur-0",
+          "absolute left-4 right-4 top-[calc(100%+0.5rem)] z-50 rounded-2xl border border-white/20 bg-slate-800/95 p-2 shadow-xl shadow-slate-950/20 backdrop-blur lg:static lg:z-auto lg:flex lg:min-w-0 lg:items-center lg:gap-1 lg:rounded-full lg:bg-white/10 lg:p-1 lg:shadow-none lg:backdrop-blur-0 xl:gap-2",
           isOpen ? "block" : "hidden lg:flex",
         ].join(" ")}
       >
-        <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:gap-2">
+        <div className="flex flex-col gap-1 lg:min-w-0 lg:flex-row lg:items-center lg:gap-1 xl:gap-2">
           {items.map((item) => (
             <div key={item.href} onClick={() => setIsOpen(false)}>
               <ActiveNavLink href={item.href}>{item.label}</ActiveNavLink>
@@ -91,9 +91,11 @@ export function MobileHeaderNav({
           ))}
 
           {user ? (
-            <div className="border-t border-white/10 px-4 py-3 text-sm leading-tight text-slate-100 lg:border-l lg:border-t-0 lg:py-1">
-              <span className="block font-semibold text-white">{user.name}</span>
-              <span className="block max-w-56 truncate text-xs text-emerald-50/80">
+            <div className="min-w-0 border-t border-white/10 px-4 py-3 text-sm leading-tight text-slate-100 lg:max-w-44 lg:border-l lg:border-t-0 lg:px-3 lg:py-1 xl:max-w-56 xl:px-4">
+              <span className="block truncate font-semibold text-white">
+                {user.name}
+              </span>
+              <span className="block truncate text-xs text-emerald-50/80">
                 {user.email}
               </span>
             </div>

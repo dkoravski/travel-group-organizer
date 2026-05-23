@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 const baseClass =
-  "block rounded-full px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/20 hover:text-white";
+  "block whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/20 hover:text-white xl:px-4";
 const activeClass = "bg-white/20 text-white";
 
 export function ActiveNavLink({

@@ -35,12 +35,14 @@ export async function Header() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="group inline-flex min-w-0 items-center gap-3 text-base font-bold tracking-tight text-white sm:text-lg"
+          className="group inline-flex min-w-0 shrink items-center gap-3 text-base font-bold tracking-tight text-white sm:text-lg"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-sm font-black text-emerald-700 shadow-lg shadow-slate-900/10 transition group-hover:bg-emerald-50">
             TG
           </span>
-          <span className="truncate">Travel Group Organizer</span>
+          <span className="truncate lg:max-w-40 xl:max-w-none">
+            Travel Group Organizer
+          </span>
         </Link>
 
         <MobileHeaderNav

@@ -10,7 +10,9 @@ type CreateGroupPageProps = {
   }>;
 };
 
-export default async function CreateGroupPage({ searchParams }: CreateGroupPageProps) {
+export default async function CreateGroupPage({
+  searchParams,
+}: CreateGroupPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -69,22 +71,6 @@ export default async function CreateGroupPage({ searchParams }: CreateGroupPageP
             rows={4}
             className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
             placeholder="Кратко описание на групата"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="imageUrl"
-            className="block text-sm font-medium text-slate-700"
-          >
-            URL на изображение
-          </label>
-          <input
-            id="imageUrl"
-            name="imageUrl"
-            type="url"
-            className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-            placeholder="https://..."
           />
         </div>
 
