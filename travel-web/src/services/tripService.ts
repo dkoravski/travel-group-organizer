@@ -515,7 +515,7 @@ export async function getTripPackingItems(tripId: number, userId: number) {
 export async function replaceTripPackingItemsAsManager(
   tripId: number,
   userId: number,
-  items: { title: string; description?: string | null }[],
+  items: { id?: number | null; title: string; description?: string | null }[],
 ) {
   const [trip] = await db
     .select({ id: trips.id })
@@ -538,17 +538,45 @@ export async function replaceTripPackingItemsAsManager(
     return false;
   }
 
-  await db.delete(packingItems).where(eq(packingItems.tripId, tripId));
+  const existingItems = await db
+    .select({ id: packingItems.id })
+    .from(packingItems)
+    .where(eq(packingItems.tripId, tripId));
+  const existingIds = new Set(existingItems.map((item) => item.id));
+  const keptIds = new Set<number>();
 
-  if (items.length > 0) {
-    await db.insert(packingItems).values(
-      items.map((item) => ({
+  for (const item of items) {
+    if (item.id && existingIds.has(item.id)) {
+      await db
+        .update(packingItems)
+        .set({
+          title: item.title,
+          description: item.description || null,
+        })
+        .where(and(eq(packingItems.id, item.id), eq(packingItems.tripId, tripId)));
+      keptIds.add(item.id);
+      continue;
+    }
+
+    const [createdItem] = await db
+      .insert(packingItems)
+      .values({
         tripId,
         title: item.title,
         description: item.description || null,
         createdBy: userId,
-      })),
-    );
+      })
+      .returning({ id: packingItems.id });
+
+    keptIds.add(createdItem.id);
+  }
+
+  for (const existingId of existingIds) {
+    if (!keptIds.has(existingId)) {
+      await db
+        .delete(packingItems)
+        .where(and(eq(packingItems.id, existingId), eq(packingItems.tripId, tripId)));
+    }
   }
 
   return true;

@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 export function BackArrowButton({
   fallbackHref,
   label = "Назад",
+  useHistory = true,
 }: {
   fallbackHref: string;
   label?: string;
+  useHistory?: boolean;
 }) {
   const router = useRouter();
 
   function handleBack() {
-    if (window.history.length > 1) {
+    if (useHistory && window.history.length > 1) {
       router.back();
       return;
     }

@@ -30,7 +30,7 @@ export function DashboardTripCard({ trip }: DashboardTripCardProps) {
 
   return (
     <Link
-      href={`/trips/${trip.id}`}
+      href={`/trips/${trip.id}?from=dashboard`}
       aria-label={`Отвори пътуване ${trip.title}`}
       className="group block rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl hover:shadow-slate-900/10 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
     >

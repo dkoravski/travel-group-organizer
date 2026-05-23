@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 
-import { DashboardGroupCard } from "@/components/DashboardGroupCard";
 import { DashboardQuickActions } from "@/components/DashboardQuickActions";
-import { DashboardTripCard } from "@/components/DashboardTripCard";
+import { DashboardSearch } from "@/components/DashboardSearch";
 import { getCurrentUser } from "@/lib/auth";
 import { getDashboardData } from "@/services/dashboardService";
 import { userHasManagedGroups } from "@/services/groupService";
@@ -28,69 +27,10 @@ export default async function DashboardPage() {
       </header>
 
       <main className="space-y-10">
-        <section aria-labelledby="groups-heading">
-          <SectionHeading
-            id="groups-heading"
-            title="Моите туристически групи"
-            description="Групите, в които участвате в момента."
-          />
-          {groups.length > 0 ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
-              {groups.map((group) => (
-                <DashboardGroupCard key={group.id} group={group} from="dashboard" />
-              ))}
-            </div>
-          ) : (
-            <EmptyState message="Все още не участвате в туристически групи." />
-          )}
-        </section>
-
-        <section aria-labelledby="trips-heading">
-          <SectionHeading
-            id="trips-heading"
-            title="Предстоящи пътувания"
-            description="Най-близките активни пътувания от вашите групи."
-          />
-          {upcomingTrips.length > 0 ? (
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
-              {upcomingTrips.map((trip) => (
-                <DashboardTripCard key={trip.id} trip={trip} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState message="Няма предстоящи пътувания за вашите групи." />
-          )}
-        </section>
+        <DashboardSearch groups={groups} upcomingTrips={upcomingTrips} />
 
         <DashboardQuickActions hasManagerAccess={hasManagerAccess} />
       </main>
-    </div>
-  );
-}
-
-function SectionHeading({
-  id,
-  title,
-  description,
-}: {
-  id: string;
-  title: string;
-  description: string;
-}) {
-  return (
-      <div>
-      <h2 id={id} className="text-xl font-black tracking-tight text-slate-950">
-        {title}
-      </h2>
-      <p className="mt-1 text-sm text-slate-600">{description}</p>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-white/80 p-6 text-sm font-medium text-slate-600">
-      {message}
     </div>
   );
 }

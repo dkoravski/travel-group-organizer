@@ -23,16 +23,24 @@ type TripPageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    afterEdit?: string;
+    afterPacking?: string;
+    from?: string;
+  }>;
 };
 
-export default async function TripPage({ params }: TripPageProps) {
+export default async function TripPage({ params, searchParams }: TripPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     redirect("/login");
   }
 
-  const { id } = await params;
+  const [{ id }, { afterEdit, afterPacking, from }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const tripId = Number(id);
 
   if (!Number.isInteger(tripId) || tripId <= 0) {
@@ -50,12 +58,24 @@ export default async function TripPage({ params }: TripPageProps) {
     getTripComments(tripId),
   ]);
   const participantsWithPreferences = participants.filter(hasPreferences);
+  const sourceFrom =
+    from === "manager" || from === "dashboard" ? from : undefined;
+  const cameFromEdit = afterEdit === "1";
+  const cameFromPacking = afterPacking === "1";
+  const sourceQuery = sourceFrom ? `?from=${sourceFrom}` : "";
+  const backHref =
+    sourceFrom === "manager"
+      ? "/manager"
+      : sourceFrom === "dashboard"
+        ? "/dashboard"
+        : "/trips";
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <BackArrowButton
-        fallbackHref="/trips"
+        fallbackHref={backHref}
         label="Назад към предишната страница"
+        useHistory={!sourceFrom && !cameFromEdit && !cameFromPacking}
       />
 
       <article className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -321,7 +341,7 @@ export default async function TripPage({ params }: TripPageProps) {
 
           {trip.isJoined ? (
           <Link
-            href={`/trips/${trip.id}/packing`}
+            href={`/trips/${trip.id}/packing${sourceQuery}`}
             className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-center text-xs font-semibold leading-4 text-emerald-800 transition hover:bg-emerald-50 sm:w-[10.5rem] lg:w-[10rem]"
           >
             Покажи „Списък за багаж“
@@ -330,7 +350,7 @@ export default async function TripPage({ params }: TripPageProps) {
 
           {trip.isGroupManager ? (
             <Link
-              href={`/trips/${trip.id}/packing/edit?from=manager`}
+              href={`/trips/${trip.id}/packing/edit${sourceQuery}`}
               className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold leading-4 text-white transition hover:bg-emerald-700 sm:w-[11rem] lg:w-[10.25rem]"
             >
               {trip.packingItemsCount > 0
@@ -341,7 +361,7 @@ export default async function TripPage({ params }: TripPageProps) {
 
           {trip.isGroupManager ? (
             <Link
-              href={`/trips/${trip.id}/edit`}
+              href={`/trips/${trip.id}/edit${sourceQuery}`}
               className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-1.5 text-center text-xs font-semibold leading-4 text-slate-900 transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800 sm:w-28 lg:w-24"
             >
               Редактирай

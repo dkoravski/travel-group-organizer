@@ -195,14 +195,33 @@ export type TripPreferencesActionState = {
   error?: string;
 };
 
-export async function createTripAction(formData: FormData) {
+export type TripFormActionState = {
+  error?: string;
+};
+
+function getActionErrorMessage(error: unknown) {
+  return error instanceof Error
+    ? error.message
+    : "Възникна грешка при запазване на пътуването.";
+}
+
+export async function createTripAction(
+  _previousState: TripFormActionState,
+  formData: FormData,
+): Promise<TripFormActionState> {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     redirect("/login?redirectTo=/trips/create");
   }
 
-  const payload = getTripPayload(formData);
+  let payload: ReturnType<typeof getTripPayload>;
+
+  try {
+    payload = getTripPayload(formData);
+  } catch (error) {
+    return { error: getActionErrorMessage(error) };
+  }
   const {
     groupId,
     title,
@@ -216,13 +235,13 @@ export async function createTripAction(formData: FormData) {
   } = payload;
 
   if (!groupId || !title || !destination || !startDate || !endDate) {
-    throw new Error("Липсват задължителни полета за пътуването.");
+    return { error: "Липсват задължителни полета за пътуването." };
   }
 
   const canCreateTrip = await userCanCreateTrip(groupId, currentUser.id);
 
   if (!canCreateTrip) {
-    throw new Error("Не можете да създадете пътуване за тази група.");
+    return { error: "Не можете да създадете пътуване за тази група." };
   }
 
   await createTrip({
@@ -241,7 +260,10 @@ export async function createTripAction(formData: FormData) {
   redirect("/trips");
 }
 
-export async function updateTripAction(formData: FormData) {
+export async function updateTripAction(
+  _previousState: TripFormActionState,
+  formData: FormData,
+): Promise<TripFormActionState> {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -249,16 +271,23 @@ export async function updateTripAction(formData: FormData) {
   }
 
   const tripId = Number(getStringValue(formData, "tripId"));
-  const payload = getTripPayload(formData);
+  const from = getStringValue(formData, "from");
+  let payload: ReturnType<typeof getTripPayload>;
+
+  try {
+    payload = getTripPayload(formData);
+  } catch (error) {
+    return { error: getActionErrorMessage(error) };
+  }
 
   if (!Number.isInteger(tripId) || tripId <= 0) {
-    throw new Error("Невалидно пътуване.");
+    return { error: "Невалидно пътуване." };
   }
 
   const updated = await updateTrip({ ...payload, tripId }, currentUser.id);
 
   if (!updated) {
-    throw new Error("Нямате права да редактирате това пътуване.");
+    return { error: "Нямате права да редактирате това пътуване." };
   }
 
   revalidatePath("/trips");
@@ -266,7 +295,16 @@ export async function updateTripAction(formData: FormData) {
   revalidatePath("/manager");
   revalidatePath(`/groups/${payload.groupId}`);
 
-  redirect(`/trips/${tripId}`);
+  const redirectParams = new URLSearchParams();
+
+  if (from === "manager" || from === "dashboard") {
+    redirectParams.set("from", from);
+  }
+
+  redirectParams.set("afterEdit", "1");
+  const sourceQuery = `?${redirectParams.toString()}`;
+
+  redirect(`/trips/${tripId}${sourceQuery}`);
 }
 
 export async function joinTripAction(formData: FormData) {
@@ -432,9 +470,16 @@ export async function updatePackingListAction(formData: FormData) {
   const descriptions = formData
     .getAll("description")
     .map((value) => (typeof value === "string" ? value.trim() : ""));
+  const itemIds = formData
+    .getAll("itemId")
+    .map((value) => {
+      const id = typeof value === "string" ? Number(value) : NaN;
+      return Number.isInteger(id) && id > 0 ? id : null;
+    });
 
   const items = titles
     .map((title, index) => ({
+      id: itemIds[index],
       title,
       description: descriptions[index] || null,
     }))
@@ -473,7 +518,15 @@ export async function updatePackingListAction(formData: FormData) {
   revalidatePath(`/trips/${tripId}/packing/edit`);
   revalidatePath("/manager");
 
-  redirect(`/trips/${tripId}/packing${from === "manager" ? "?from=manager" : ""}`);
+  const redirectParams = new URLSearchParams();
+
+  if (from === "manager" || from === "dashboard") {
+    redirectParams.set("from", from);
+  }
+
+  redirectParams.set("afterEdit", "1");
+
+  redirect(`/trips/${tripId}/packing?${redirectParams.toString()}`);
 }
 
 export async function togglePackingItemAction(formData: FormData) {

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
@@ -12,6 +11,7 @@ type PackingListPageProps = {
     id: string;
   }>;
   searchParams: Promise<{
+    afterEdit?: string;
     from?: string;
   }>;
 };
@@ -26,17 +26,29 @@ export default async function PackingListPage({
     redirect("/login?redirectTo=/trips");
   }
 
-  const [requestHeaders, { id }, { from }] = await Promise.all([
+  const [requestHeaders, { id }, { afterEdit, from }] = await Promise.all([
     headers(),
     params,
     searchParams,
   ]);
   const tripId = Number(id);
   const referrer = requestHeaders.get("referer") ?? "";
-  const showManagerEditButton =
-    from === "manager" ||
-    referrer.includes("/manager") ||
-    referrer.includes(`/trips/${tripId}/packing/edit`);
+  const sourceFrom = getNavigationSource(from, referrer);
+  const openedFromManager =
+    sourceFrom === "manager" || (!sourceFrom && referrer.includes("/manager"));
+  const cameFromEdit = afterEdit === "1";
+  const tripBackParams = new URLSearchParams();
+
+  if (sourceFrom) {
+    tripBackParams.set("from", sourceFrom);
+  }
+
+  if (cameFromEdit) {
+    tripBackParams.set("afterPacking", "1");
+  }
+
+  const tripBackQuery = tripBackParams.toString();
+  const tripBackHref = `/trips/${tripId}${tripBackQuery ? `?${tripBackQuery}` : ""}`;
 
   if (!Number.isInteger(tripId) || tripId <= 0) {
     notFound();
@@ -54,31 +66,21 @@ export default async function PackingListPage({
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <BackArrowButton
-        fallbackHref={`/trips/${trip.id}`}
+        fallbackHref={tripBackHref}
         label="Назад към пътуването"
+        useHistory={!cameFromEdit}
       />
 
-      <header className="mt-6 mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-emerald-700">
-            {trip.destination}
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-            Списък за багаж
-          </h1>
-          <p className="mt-2 break-words text-sm text-slate-600">
-            {trip.title} · {checkedCount} от {packingItems.length} подготвени
-          </p>
-        </div>
-
-        {trip.isGroupManager && showManagerEditButton ? (
-          <Link
-            href={`/trips/${trip.id}/packing/edit?from=manager`}
-            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
-          >
-            Редактирай списъка
-          </Link>
-        ) : null}
+      <header className="mt-6 mb-8">
+        <p className="text-sm font-semibold text-emerald-700">
+          {trip.destination}
+        </p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+          Списък за багаж
+        </h1>
+        <p className="mt-2 break-words text-sm text-slate-600">
+          {trip.title} · {checkedCount} от {packingItems.length} подготвени
+        </p>
       </header>
 
       <main className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -92,7 +94,7 @@ export default async function PackingListPage({
               >
                 <input type="hidden" name="tripId" value={trip.id} />
                 <input type="hidden" name="packingItemId" value={item.id} />
-                {showManagerEditButton ? (
+                {openedFromManager ? (
                   <input type="hidden" name="from" value="manager" />
                 ) : null}
                 <input
@@ -142,4 +144,20 @@ export default async function PackingListPage({
       </main>
     </div>
   );
+}
+
+function getNavigationSource(from: string | undefined, referrer: string) {
+  if (from === "manager" || from === "dashboard") {
+    return from;
+  }
+
+  if (referrer.includes("from=dashboard") || referrer.includes("/dashboard")) {
+    return "dashboard";
+  }
+
+  if (referrer.includes("from=manager") || referrer.includes("/manager")) {
+    return "manager";
+  }
+
+  return undefined;
 }

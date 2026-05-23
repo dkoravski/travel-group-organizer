@@ -44,6 +44,9 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
   const { from } = await searchParams;
   const showDashboardBack = from === "dashboard";
   const showManagerTools = from === "manager";
+  const sourceFrom =
+    from === "manager" || from === "dashboard" ? from : undefined;
+  const sourceQuery = sourceFrom ? `?from=${sourceFrom}` : "";
 
   const group = await getGroupDetails(groupId);
 
@@ -182,7 +185,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                 </dl>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <Link
-                    href={`/trips/${trip.id}`}
+                    href={`/trips/${trip.id}${sourceQuery}`}
                     className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700 hover:shadow-emerald-900/20"
                   >
                     Отвори
@@ -190,7 +193,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                   {canManageGroup && showManagerTools ? (
                     <>
                       <Link
-                        href={`/trips/${trip.id}/edit`}
+                        href={`/trips/${trip.id}/edit${sourceQuery}`}
                         className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
                       >
                         Редактирай

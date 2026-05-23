@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import { updatePackingListAction } from "@/app/trips/actions";
@@ -24,9 +25,15 @@ export default async function EditPackingListPage({
     redirect("/login?redirectTo=/trips");
   }
 
-  const [{ id }, { from }] = await Promise.all([params, searchParams]);
+  const [requestHeaders, { id }, { from }] = await Promise.all([
+    headers(),
+    params,
+    searchParams,
+  ]);
   const tripId = Number(id);
-  const openedFromManagerPanel = from === "manager";
+  const referrer = requestHeaders.get("referer") ?? "";
+  const sourceFrom = getNavigationSource(from, referrer);
+  const sourceQuery = sourceFrom ? `?from=${sourceFrom}` : "";
 
   if (!Number.isInteger(tripId) || tripId <= 0) {
     notFound();
@@ -43,7 +50,7 @@ export default async function EditPackingListPage({
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <BackArrowButton
-        fallbackHref={`/trips/${trip.id}/packing`}
+        fallbackHref={`/trips/${trip.id}/packing${sourceQuery}`}
         label="Назад към списъка за багаж"
       />
 
@@ -64,8 +71,8 @@ export default async function EditPackingListPage({
         className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
       >
         <input type="hidden" name="tripId" value={trip.id} />
-        {openedFromManagerPanel ? (
-          <input type="hidden" name="from" value="manager" />
+        {sourceFrom ? (
+          <input type="hidden" name="from" value={sourceFrom} />
         ) : null}
 
         <div className="space-y-4">
@@ -74,6 +81,8 @@ export default async function EditPackingListPage({
               key={item.id ?? `new-${index}`}
               className="grid gap-3 rounded-md bg-slate-50 p-4 md:grid-cols-5"
             >
+              <input type="hidden" name="itemId" value={item.id ?? ""} />
+
               <div className="md:col-span-2">
                 <label
                   htmlFor={`title-${index}`}
@@ -124,6 +133,22 @@ export default async function EditPackingListPage({
       </form>
     </div>
   );
+}
+
+function getNavigationSource(from: string | undefined, referrer: string) {
+  if (from === "manager" || from === "dashboard") {
+    return from;
+  }
+
+  if (referrer.includes("from=dashboard") || referrer.includes("/dashboard")) {
+    return "dashboard";
+  }
+
+  if (referrer.includes("from=manager") || referrer.includes("/manager")) {
+    return "manager";
+  }
+
+  return undefined;
 }
 
 function getEditablePackingRows(
