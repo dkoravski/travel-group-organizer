@@ -53,7 +53,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
 
   const [members, groupTrips, canManageGroup] = await Promise.all([
     getGroupMembers(groupId),
-    getGroupTrips(groupId),
+    getGroupTrips(groupId, currentUser.id),
     userCanManageGroup(groupId, currentUser.id),
   ]);
 
@@ -153,9 +153,16 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                 key={trip.id}
                 className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
               >
-                <h3 className="text-lg font-semibold text-slate-950">
-                  {trip.title}
-                </h3>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <h3 className="text-lg font-semibold text-slate-950">
+                    {trip.title}
+                  </h3>
+                  {trip.isJoined ? (
+                    <span className="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                      Присъединен
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-1 text-sm text-slate-600">
                   {trip.destination}
                 </p>

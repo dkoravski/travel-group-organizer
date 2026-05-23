@@ -119,7 +119,7 @@ export async function getGroupMembers(groupId: number) {
     .orderBy(asc(groupMembers.role), asc(users.name));
 }
 
-export async function getGroupTrips(groupId: number) {
+export async function getGroupTrips(groupId: number, userId: number) {
   const rows = await db
     .select({
       id: trips.id,
@@ -129,6 +129,12 @@ export async function getGroupTrips(groupId: number) {
       endDate: trips.endDate,
       canceled: trips.canceled,
       participantsCount: count(tripParticipants.id),
+      isJoined: sql<boolean>`exists (
+        select 1
+        from ${tripParticipants} user_participation
+        where user_participation.trip_id = ${trips.id}
+          and user_participation.user_id = ${userId}
+      )`,
     })
     .from(trips)
     .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
