@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AddGroupMemberForm } from "@/components/AddGroupMemberForm";
 import { getCurrentUser } from "@/lib/auth";
 import { getManagedGroups } from "@/services/groupService";
+import { getManagedTrips } from "@/services/tripService";
 
 type ManagerPanelPageProps = {
   searchParams: Promise<{
@@ -20,9 +20,10 @@ export default async function ManagerPanelPage({
     redirect("/login?redirectTo=/manager");
   }
 
-  const [{ from }, managedGroups] = await Promise.all([
+  const [{ from }, managedGroups, managedTrips] = await Promise.all([
     searchParams,
     getManagedGroups(currentUser.id),
+    getManagedTrips(currentUser.id),
   ]);
   const showDashboardBack = from === "dashboard";
 
@@ -100,11 +101,9 @@ export default async function ManagerPanelPage({
               </div>
             </dl>
 
-            <AddGroupMemberForm groupId={group.id} />
-
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                href={`/groups/${group.id}`}
+                href={`/groups/${group.id}?from=manager`}
                 className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700 hover:shadow-emerald-900/20"
               >
                 Отвори
@@ -113,6 +112,63 @@ export default async function ManagerPanelPage({
           </article>
         ))}
       </main>
+
+      <section className="mt-10">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-slate-950">
+              Списъци за багаж по пътувания
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Създавайте и редактирайте списъка за багаж за всяко пътуване,
+              което управлявате.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {managedTrips.map((trip) => (
+            <article
+              key={trip.id}
+              className="flex min-h-52 flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+            >
+              <div className="flex flex-1 flex-col gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-emerald-700">
+                    {trip.groupName}
+                  </p>
+                  <h3 className="mt-2 break-words text-lg font-bold tracking-tight text-slate-950">
+                    {trip.title}
+                  </h3>
+                  <p className="mt-1 break-words text-sm text-slate-600">
+                    {trip.destination} · {trip.startDate} - {trip.endDate}
+                  </p>
+                </div>
+                <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  {trip.packingItemsCount} артикула
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <Link
+                  href={`/trips/${trip.id}/packing/edit?from=manager`}
+                  className="inline-flex h-10 items-center justify-center rounded-md bg-emerald-600 px-4 text-center text-sm font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700 hover:shadow-emerald-900/20"
+                >
+                  {trip.packingItemsCount > 0
+                    ? "Редактирай списъка"
+                    : "Създай списък с багаж"}
+                </Link>
+                <Link
+                  href={`/trips/${trip.id}/packing?from=manager`}
+                  className="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-4 text-center text-sm font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-50"
+                >
+                  Преглед
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

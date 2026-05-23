@@ -43,6 +43,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
 
   const { from } = await searchParams;
   const showDashboardBack = from === "dashboard";
+  const showManagerTools = from === "manager";
 
   const group = await getGroupDetails(groupId);
 
@@ -104,7 +105,9 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
           >
             Членове на групата
           </h2>
-          {canManageGroup ? <AddGroupMemberForm groupId={group.id} /> : null}
+          {canManageGroup && showManagerTools ? (
+            <AddGroupMemberForm groupId={group.id} />
+          ) : null}
           <div className="mt-5 space-y-3">
             {members.map((member) => (
               <article
@@ -120,7 +123,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                 <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
                   {formatGroupRole(member.role)}
                 </span>
-                {canManageGroup && member.role === "member" ? (
+                {canManageGroup && showManagerTools && member.role === "member" ? (
                   <form action={removeGroupMemberAction}>
                     <input type="hidden" name="groupId" value={group.id} />
                     <input type="hidden" name="memberUserId" value={member.id} />
@@ -177,7 +180,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                   >
                     Отвори
                   </Link>
-                  {canManageGroup ? (
+                  {canManageGroup && showManagerTools ? (
                     <>
                       <Link
                         href={`/trips/${trip.id}/edit`}

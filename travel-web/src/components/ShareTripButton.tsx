@@ -20,7 +20,7 @@ export function ShareTripButton({ tripId }: ShareTripButtonProps) {
     <button
       type="button"
       onClick={handleCopy}
-      className="h-10 cursor-pointer rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+      className="min-h-11 w-full cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm font-semibold leading-5 text-slate-800 transition hover:bg-slate-100"
     >
       {copied ? "Копирано" : "Сподели линк"}
     </button>

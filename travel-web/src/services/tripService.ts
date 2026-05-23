@@ -5,6 +5,8 @@ import { and, asc, count, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   groupMembers,
+  packingItemChecks,
+  packingItems,
   travelGroups,
   tripComments,
   tripParticipants,
@@ -80,6 +82,26 @@ export async function userCanCreateTrip(groupId: number, userId: number) {
     .limit(1);
 
   return Boolean(membership);
+}
+
+export async function userCanViewTrip(tripId: number, userId: number) {
+  const [trip] = await db
+    .select({ id: trips.id })
+    .from(trips)
+    .where(
+      and(
+        eq(trips.id, tripId),
+        sql`exists (
+          select 1
+          from ${groupMembers} user_membership
+          where user_membership.group_id = ${trips.groupId}
+            and user_membership.user_id = ${userId}
+        )`,
+      ),
+    )
+    .limit(1);
+
+  return Boolean(trip);
 }
 
 export async function createTrip(input: CreateTripInput) {
@@ -196,6 +218,41 @@ export async function getAllTrips(userId: number, onlyMyGroups = true) {
   }));
 }
 
+export async function getManagedTrips(userId: number) {
+  return db
+    .select({
+      id: trips.id,
+      title: trips.title,
+      destination: trips.destination,
+      startDate: trips.startDate,
+      endDate: trips.endDate,
+      canceled: trips.canceled,
+      groupName: travelGroups.name,
+      packingItemsCount: sql<number>`(
+        select count(*)
+        from ${packingItems}
+        where ${packingItems.tripId} = ${trips.id}
+      )`,
+    })
+    .from(trips)
+    .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId))
+    .innerJoin(
+      groupMembers,
+      and(
+        eq(groupMembers.groupId, trips.groupId),
+        eq(groupMembers.userId, userId),
+        eq(groupMembers.role, "manager"),
+      ),
+    )
+    .orderBy(asc(trips.startDate), asc(trips.title))
+    .then((rows) =>
+      rows.map((row) => ({
+        ...row,
+        packingItemsCount: Number(row.packingItemsCount),
+      })),
+    );
+}
+
 type GetTripsPageOptions = {
   page: number;
   pageSize: number;
@@ -298,6 +355,7 @@ export async function getTripDetails(tripId: number, userId: number) {
       createdAt: trips.createdAt,
       updatedAt: trips.updatedAt,
       groupName: travelGroups.name,
+      creatorName: users.name,
       participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
       commentsCount: sql<number>`(
         select count(*)
@@ -313,6 +371,11 @@ export async function getTripDetails(tripId: number, userId: number) {
             or nullif(trim(participant_preferences.accommodation_preference), '') is not null
             or nullif(trim(participant_preferences.note), '') is not null
           )
+      )`,
+      packingItemsCount: sql<number>`(
+        select count(*)
+        from ${packingItems}
+        where ${packingItems.tripId} = ${trips.id}
       )`,
       isGroupMember: sql<boolean>`exists (
         select 1
@@ -364,9 +427,10 @@ export async function getTripDetails(tripId: number, userId: number) {
     })
     .from(trips)
     .innerJoin(travelGroups, eq(travelGroups.id, trips.groupId))
+    .innerJoin(users, eq(users.id, trips.createdBy))
     .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
     .where(eq(trips.id, tripId))
-    .groupBy(trips.id, travelGroups.name)
+    .groupBy(trips.id, travelGroups.name, users.name)
     .limit(1);
 
   return trip
@@ -375,6 +439,7 @@ export async function getTripDetails(tripId: number, userId: number) {
         participantsCount: Number(trip.participantsCount),
         commentsCount: Number(trip.commentsCount),
         preferencesCount: Number(trip.preferencesCount),
+        packingItemsCount: Number(trip.packingItemsCount),
         userGuestsCount: trip.userGuestsCount ? Number(trip.userGuestsCount) : 0,
       } : null;
       }
@@ -420,6 +485,121 @@ export async function getTripComments(tripId: number) {
     .innerJoin(users, eq(users.id, tripComments.userId))
     .where(eq(tripComments.tripId, tripId))
     .orderBy(desc(tripComments.createdAt));
+}
+
+export async function getTripPackingItems(tripId: number, userId: number) {
+  const rows = await db
+    .select({
+      id: packingItems.id,
+      title: packingItems.title,
+      description: packingItems.description,
+      checked: sql<boolean>`coalesce(${packingItemChecks.checked}, false)`,
+    })
+    .from(packingItems)
+    .leftJoin(
+      packingItemChecks,
+      and(
+        eq(packingItemChecks.packingItemId, packingItems.id),
+        eq(packingItemChecks.userId, userId),
+      ),
+    )
+    .where(eq(packingItems.tripId, tripId))
+    .orderBy(asc(packingItems.id));
+
+  return rows.map((row) => ({
+    ...row,
+    checked: Boolean(row.checked),
+  }));
+}
+
+export async function replaceTripPackingItemsAsManager(
+  tripId: number,
+  userId: number,
+  items: { title: string; description?: string | null }[],
+) {
+  const [trip] = await db
+    .select({ id: trips.id })
+    .from(trips)
+    .where(
+      and(
+        eq(trips.id, tripId),
+        sql`exists (
+          select 1
+          from ${groupMembers} manager_membership
+          where manager_membership.group_id = ${trips.groupId}
+            and manager_membership.user_id = ${userId}
+            and manager_membership.role = 'manager'
+        )`,
+      ),
+    )
+    .limit(1);
+
+  if (!trip) {
+    return false;
+  }
+
+  await db.delete(packingItems).where(eq(packingItems.tripId, tripId));
+
+  if (items.length > 0) {
+    await db.insert(packingItems).values(
+      items.map((item) => ({
+        tripId,
+        title: item.title,
+        description: item.description || null,
+        createdBy: userId,
+      })),
+    );
+  }
+
+  return true;
+}
+
+export async function setPackingItemChecked(
+  packingItemId: number,
+  tripId: number,
+  userId: number,
+  checked: boolean,
+) {
+  const [item] = await db
+    .select({ id: packingItems.id })
+    .from(packingItems)
+    .where(
+      and(
+        eq(packingItems.id, packingItemId),
+        eq(packingItems.tripId, tripId),
+        sql`exists (
+          select 1
+          from ${trips}
+          inner join ${groupMembers} user_membership
+            on user_membership.group_id = ${trips.groupId}
+          where ${trips.id} = ${tripId}
+            and user_membership.user_id = ${userId}
+        )`,
+      ),
+    )
+    .limit(1);
+
+  if (!item) {
+    return false;
+  }
+
+  await db
+    .insert(packingItemChecks)
+    .values({
+      packingItemId,
+      userId,
+      checked,
+      checkedAt: checked ? new Date() : null,
+    })
+    .onConflictDoUpdate({
+      target: [packingItemChecks.packingItemId, packingItemChecks.userId],
+      set: {
+        checked,
+        checkedAt: checked ? new Date() : null,
+      },
+    });
+
+  return true;
 }
 
 export async function createTripComment(

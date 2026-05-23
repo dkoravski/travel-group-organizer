@@ -12,6 +12,8 @@ import {
   deleteTripCommentAsManager,
   joinTrip,
   leaveTrip,
+  replaceTripPackingItemsAsManager,
+  setPackingItemChecked,
   updateTrip,
   updateTripPreferences,
   updateTripGuests,
@@ -408,6 +410,109 @@ export async function deleteTripCommentAction(formData: FormData) {
 
   revalidatePath(`/trips/${tripId}`);
   revalidatePath("/manager");
+}
+
+export async function updatePackingListAction(formData: FormData) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login?redirectTo=/trips");
+  }
+
+  const tripId = Number(getStringValue(formData, "tripId"));
+  const from = getStringValue(formData, "from");
+
+  if (!Number.isInteger(tripId) || tripId <= 0) {
+    throw new Error("Невалидно пътуване.");
+  }
+
+  const titles = formData
+    .getAll("title")
+    .map((value) => (typeof value === "string" ? value.trim() : ""));
+  const descriptions = formData
+    .getAll("description")
+    .map((value) => (typeof value === "string" ? value.trim() : ""));
+
+  const items = titles
+    .map((title, index) => ({
+      title,
+      description: descriptions[index] || null,
+    }))
+    .filter((item) => item.title || item.description);
+
+  if (items.some((item) => !item.title)) {
+    throw new Error("Всеки артикул с описание трябва да има заглавие.");
+  }
+
+  if (items.length > 80) {
+    throw new Error("Списъкът за багаж не може да съдържа повече от 80 артикула.");
+  }
+
+  const tooLongItem = items.find((item) => item.title.length > 180);
+
+  if (tooLongItem) {
+    throw new Error("Всеки артикул в списъка трябва да е до 180 символа.");
+  }
+
+  if (items.some((item) => item.description && item.description.length > 1000)) {
+    throw new Error("Описанието на артикул трябва да е до 1000 символа.");
+  }
+
+  const updated = await replaceTripPackingItemsAsManager(
+    tripId,
+    currentUser.id,
+    items,
+  );
+
+  if (!updated) {
+    throw new Error("Нямате права да редактирате списъка за багаж.");
+  }
+
+  revalidatePath(`/trips/${tripId}`);
+  revalidatePath(`/trips/${tripId}/packing`);
+  revalidatePath(`/trips/${tripId}/packing/edit`);
+  revalidatePath("/manager");
+
+  redirect(`/trips/${tripId}/packing${from === "manager" ? "?from=manager" : ""}`);
+}
+
+export async function togglePackingItemAction(formData: FormData) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login?redirectTo=/trips");
+  }
+
+  const tripId = Number(getStringValue(formData, "tripId"));
+  const packingItemId = Number(getStringValue(formData, "packingItemId"));
+  const checked = getStringValue(formData, "checked") === "true";
+  const from = getStringValue(formData, "from");
+
+  if (
+    !Number.isInteger(tripId) ||
+    tripId <= 0 ||
+    !Number.isInteger(packingItemId) ||
+    packingItemId <= 0
+  ) {
+    throw new Error("Невалиден артикул от списъка.");
+  }
+
+  const updated = await setPackingItemChecked(
+    packingItemId,
+    tripId,
+    currentUser.id,
+    checked,
+  );
+
+  if (!updated) {
+    throw new Error("Нямате достъп до този списък за багаж.");
+  }
+
+  revalidatePath(`/trips/${tripId}/packing`);
+
+  if (from === "manager") {
+    redirect(`/trips/${tripId}/packing?from=manager`);
+  }
 }
 
 export async function updateTripGuestsAction(formData: FormData) {

@@ -9,7 +9,6 @@ import {
   leaveTripAction,
 } from "@/app/trips/actions";
 import { BackArrowButton } from "@/components/BackArrowButton";
-import { ShareTripButton } from "@/components/ShareTripButton";
 import { TripCommentForm } from "@/components/TripCommentForm";
 import { TripGuestsForm } from "@/components/TripGuestsForm";
 import { TripPreferencesForm } from "@/components/TripPreferencesForm";
@@ -67,9 +66,17 @@ export default async function TripPage({ params }: TripPageProps) {
             </h1>
             <p className="mt-2 text-lg text-slate-600">{trip.destination}</p>
           </div>
-          <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
-            {trip.canceled ? "отменено" : "активно"}
-          </span>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
+              {trip.canceled ? "отменено" : "активно"}
+            </span>
+            <p className="text-sm text-slate-600">
+              Организатор:{" "}
+              <span className="font-semibold text-slate-950">
+                {trip.creatorName}
+              </span>
+            </p>
+          </div>
         </header>
 
         <dl className="mt-8 grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
@@ -162,6 +169,7 @@ export default async function TripPage({ params }: TripPageProps) {
           </section>
         ) : null}
 
+        {trip.isJoined ? (
         <section className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -207,13 +215,15 @@ export default async function TripPage({ params }: TripPageProps) {
             )}
           </div>
         </section>
+        ) : null}
 
+        {trip.isJoined ? (
         <section className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
           <p className="text-sm text-slate-600">
             Обсъдете детайли, въпроси и идеи с групата.
           </p>
 
-          <TripCommentForm tripId={trip.id} />
+          {trip.isJoined ? <TripCommentForm tripId={trip.id} /> : null}
 
           <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <h2 className="text-xl font-bold tracking-tight text-slate-950">
@@ -263,14 +273,15 @@ export default async function TripPage({ params }: TripPageProps) {
             )}
           </div>
         </section>
+        ) : null}
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-stretch lg:flex-nowrap">
           {trip.isJoined ? (
-            <form action={leaveTripAction}>
+            <form action={leaveTripAction} className="w-full sm:w-[8.5rem] lg:w-[8rem]">
               <input type="hidden" name="tripId" value={trip.id} />
               <button
                 type="submit"
-                className="h-10 w-full cursor-pointer rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 sm:w-auto"
+                className="min-h-10 w-full cursor-pointer rounded-md border border-red-200 bg-white px-2 py-1.5 text-center text-xs font-semibold leading-4 text-red-700 transition hover:bg-red-50"
               >
                 Напусни пътуването
               </button>
@@ -278,10 +289,11 @@ export default async function TripPage({ params }: TripPageProps) {
           ) : (
             <form
               action={joinTripAction}
-              className="flex flex-col gap-3 sm:flex-row sm:items-end"
+              className="w-full sm:w-[8.5rem] lg:w-[8rem]"
             >
               <input type="hidden" name="tripId" value={trip.id} />
-              <div className="sm:w-40">
+              <input type="hidden" name="guestsCount" value={0} />
+              <div className="hidden">
                 <label
                   htmlFor="joinGuestsCount"
                   className="block text-sm font-medium text-slate-700"
@@ -300,30 +312,48 @@ export default async function TripPage({ params }: TripPageProps) {
               <button
                 type="submit"
                 disabled={trip.canceled}
-                className="h-10 w-full cursor-pointer rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
+                className="min-h-10 w-full cursor-pointer rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold leading-4 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 Присъедини се
               </button>
             </form>
           )}
 
-          <ShareTripButton tripId={trip.id} />
+          {trip.isJoined ? (
+          <Link
+            href={`/trips/${trip.id}/packing`}
+            className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-center text-xs font-semibold leading-4 text-emerald-800 transition hover:bg-emerald-50 sm:w-[10.5rem] lg:w-[10rem]"
+          >
+            Покажи „Списък за багаж“
+          </Link>
+          ) : null}
+
+          {trip.isGroupManager ? (
+            <Link
+              href={`/trips/${trip.id}/packing/edit?from=manager`}
+              className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold leading-4 text-white transition hover:bg-emerald-700 sm:w-[11rem] lg:w-[10.25rem]"
+            >
+              {trip.packingItemsCount > 0
+                ? "Редактирай списъка"
+                : "Създай списък с багаж"}
+            </Link>
+          ) : null}
 
           {trip.isGroupManager ? (
             <Link
               href={`/trips/${trip.id}/edit`}
-              className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800"
+              className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-1.5 text-center text-xs font-semibold leading-4 text-slate-900 transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-800 sm:w-28 lg:w-24"
             >
               Редактирай
             </Link>
           ) : null}
 
           {trip.isGroupManager && !trip.canceled ? (
-            <form action={cancelTripAction}>
+            <form action={cancelTripAction} className="w-full sm:w-[10.5rem] lg:w-[9.75rem]">
               <input type="hidden" name="tripId" value={trip.id} />
               <button
                 type="submit"
-                className="h-10 w-full cursor-pointer rounded-md border border-amber-200 bg-amber-50 px-4 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 sm:w-auto"
+                className="min-h-10 w-full cursor-pointer rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-center text-xs font-semibold leading-4 text-amber-800 transition hover:bg-amber-100"
               >
                 Отмени пътуването
               </button>
@@ -331,12 +361,12 @@ export default async function TripPage({ params }: TripPageProps) {
           ) : null}
 
           {trip.isGroupManager ? (
-            <form action={deleteTripAction}>
+            <form action={deleteTripAction} className="w-full sm:w-40 lg:w-[9.25rem]">
               <input type="hidden" name="tripId" value={trip.id} />
               <input type="hidden" name="groupId" value={trip.groupId} />
               <button
                 type="submit"
-                className="h-10 w-full cursor-pointer rounded-md bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 sm:w-auto"
+                className="min-h-10 w-full cursor-pointer rounded-md bg-red-600 px-2 py-1.5 text-center text-xs font-semibold leading-4 text-white transition hover:bg-red-700"
               >
                 Изтрий пътуването
               </button>
