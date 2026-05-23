@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -303,6 +303,7 @@ export default function TripDetailsScreen() {
         <Text style={styles.subtitle}>{trip.destination}</Text>
         <Text style={styles.meta}>{formatDateRange(trip.startDate, trip.endDate)}</Text>
         <Text style={styles.meta}>{trip.groupName}</Text>
+        <Text style={styles.meta}>Организатор: {trip.creatorName}</Text>
         <Text style={styles.meta}>
           {trip.participantsCount} участници
           {trip.capacity ? ` от максимум ${trip.capacity}` : ''}
@@ -325,6 +326,20 @@ export default function TripDetailsScreen() {
         ) : null}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        {trip.isJoined ? (
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() =>
+              router.push({
+                pathname: '/trip-packing',
+                params: { id: String(trip.id) },
+              })
+            }
+          >
+            <Text style={styles.secondaryButtonText}>Покажи списък за багаж</Text>
+          </Pressable>
+        ) : null}
 
         <View style={styles.actionPanel}>
           <Text style={styles.sectionTitle}>Резервация</Text>
@@ -415,6 +430,8 @@ export default function TripDetailsScreen() {
           </View>
         </Modal>
 
+        {trip.isJoined ? (
+          <>
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Предпочитания</Text>
           {trip.isJoined ? (
@@ -471,7 +488,11 @@ export default function TripDetailsScreen() {
             <Text style={styles.body}>Присъединете се към пътуването, за да добавите предпочитания.</Text>
           )}
         </View>
+          </>
+        ) : null}
 
+        {trip.isJoined ? (
+          <>
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Предпочитания на участниците</Text>
@@ -562,6 +583,8 @@ export default function TripDetailsScreen() {
             )}
           </View>
         </View>
+          </>
+        ) : null}
 
       </View>
     </ScrollView>
@@ -779,6 +802,21 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  secondaryButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#86efac',
+    backgroundColor: '#ffffff',
+    marginTop: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+  secondaryButtonText: {
+    color: '#047857',
+    fontSize: 16,
+    fontWeight: '800',
   },
   preferenceAuthor: {
     color: '#19212a',

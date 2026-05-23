@@ -54,6 +54,7 @@ export type TripDetails = TripSummary & {
   capacity: number | null;
   estimatedBudget: string | null;
   createdBy: number;
+  creatorName: string;
   createdAt: string;
   updatedAt: string;
   isGroupMember: boolean;
@@ -88,6 +89,13 @@ export type TripParticipantPreference = {
   transportPreference: string | null;
   accommodationPreference: string | null;
   note: string | null;
+};
+
+export type PackingItem = {
+  id: number;
+  title: string;
+  description: string | null;
+  checked: boolean;
 };
 
 export type TripsPage = {
@@ -335,6 +343,44 @@ export async function getTripComments(token: string, tripId: number) {
   const body = await readApiResponse<{ data: TripComment[] }>(
     response,
     'Коментарите не могат да бъдат заредени.',
+  );
+
+  return body.data;
+}
+
+export async function getTripPackingItems(token: string, tripId: number) {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/packing`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const body = await readApiResponse<{ data: PackingItem[] }>(
+    response,
+    'Списъкът за багаж не може да бъде зареден.',
+  );
+
+  return body.data;
+}
+
+export async function updatePackingItemCheck(
+  token: string,
+  tripId: number,
+  packingItemId: number,
+  checked: boolean,
+) {
+  const response = await apiFetch(`${API_BASE_URL}/trips/${tripId}/packing`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ packingItemId, checked }),
+  });
+
+  const body = await readApiResponse<{ data: PackingItem[] }>(
+    response,
+    'Артикулът не може да бъде обновен.',
   );
 
   return body.data;

@@ -101,7 +101,7 @@ export function GET() {
         <p>Lists trips from the authenticated user's groups. <code>pageSize</code> is capped at 50.</p>
 
         <p><span class="method">GET</span> <code>/api/trips/{id}</code></p>
-        <p>Returns one trip with capacity, joined state, the authenticated user's guest count, and all comments visible to group members.</p>
+        <p>Returns one trip with capacity, joined state, organizer name (<code>creatorName</code>), the authenticated user's guest count, comments, and participant preferences visible to group members.</p>
       </section>
 
       <section>
@@ -147,6 +147,19 @@ export function GET() {
         <p><span class="method">PATCH</span> <code>/api/trips/{id}/comment/{commentId}</code></p>
         <pre>{ "content": "Updated comment text" }</pre>
         <p>Updates one of the authenticated user's own comments.</p>
+      </section>
+
+      <section>
+        <h2>Packing List</h2>
+        <p><span class="method">GET</span> <code>/api/trips/{id}/packing</code></p>
+        <p>Returns the joined user's packing list items for a trip, including <code>title</code>, <code>description</code>, and the user's <code>checked</code> state. The user must be joined to the trip.</p>
+
+        <p><span class="method">PATCH</span> <code>/api/trips/{id}/packing</code></p>
+        <pre>{
+  "packingItemId": 12,
+  "checked": true
+}</pre>
+        <p>Updates the authenticated joined user's checked state for one packing item and returns the refreshed packing list.</p>
       </section>
     </main>
   </body>
