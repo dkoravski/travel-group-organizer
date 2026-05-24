@@ -16,22 +16,20 @@ User:
 - Can:
     - manage own profile
     - create travel group (after creating a group, becomes the group manager)
-    - view groups where is a member
-    - create personal travel preferences
-    - create trip comments,
-    - marks the packing  list
 
 - Profile fields:
     - name
     - email
 
 Member:
-- Description: Travel Group Member, a user who joined a travel group by adding the group manager
+- Description: Travel Group Member, a user who joined a travel group by being added by the group manager
 - Can:
+    - view the groups he is a member of
     - view group trips
     - view trip details
     - join / leave a trip
     - comment on trips
+    - create personal travel preferences
     - view packing list and check
 
 Manager:
@@ -49,7 +47,7 @@ Each group has:
 - name
 - description
 - visibility: private
-- created by
+- created by users or managers
 - managers
 - members
 
@@ -92,7 +90,7 @@ Capacity states:
     - snacks
 
 - Features:
-    - managers create global packing list
+    - managers create packing list
     - members mark items as packed for themselves
 
 ## Web App Scope
@@ -104,8 +102,10 @@ Web features:
 - landing page
 - register/login
 - dashboard
-- profile management
+- user profile
+- manager panel (if the logged in user is also a manager)
 - create groups
+- group details page
 - create/edit/cancel/delete trips
 - trip details page
 - participants detais
@@ -118,7 +118,9 @@ Web features:
 The mobile app is a smaller companion app for travelers, which implements only the most important group member functionality:
 
 - login/register
+- user profile
 - view upcoming/current/past trips
+- view groups of the user
 - trip details
 - join/leave trip
 - view and post participants
@@ -129,7 +131,7 @@ The mobile app is a smaller companion app for travelers, which implements only t
 
 ## Architecture
 
-Travel Group Organizer is organized as an npm workspace monorepo with separate applications for the web and mobile clients.
+Travel Group Organizer is organized as an npm workspace monorepo with separate applications for the web and mobile clients:
 
 - `travel-web` is the primary full-stack application. It uses Next.js App Router with React and TypeScript for the web UI, server actions for web workflows, and REST API route handlers under `/api` for the mobile client.
 - `travel-mobile` is an Expo React Native companion app. It uses Expo Router screens and calls the web application's REST API.
@@ -149,16 +151,16 @@ Main technology stack:
 High-level request flow:
 
 ```text
-Browser
+- Browser
   -> Next.js pages / server actions
   -> Drizzle ORM
   -> Neon PostgreSQL
 
-Expo mobile app
+- Expo mobile app
   -> /api REST endpoints in travel-web
   -> Drizzle ORM
   -> Neon PostgreSQL
-```
+  ```
 
 ## Database Schema Design
 

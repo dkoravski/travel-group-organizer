@@ -2,10 +2,9 @@
 Travel Group Organizer is an application for organizing group trips, excursions, weekend trips between friends, families or small communities.
 
 # Roles in the Mobile App
-- Visitor (anonymous user): can view home page, view public app information, register, login
-- User (authenticated user) can: manage own profile, create travel group, join travel group, view groups where they are member, create personal travel preferences
-- Manager (manager of a travel group) can: create/edit/cancel/delete trips, manage group members, remove members from group, moderate comments
-- Admin can: view all users, manage all groups, manage all trips, remove inappropriate content
+- Visitor (anonymous user): can view home page, register, login
+- User (authenticated user) can: manage own profile
+- Member: a user who joined a travel group by being added by the group manager.Can: view the groups he is a member of,view group trips, view trip details, join / leave a trip, comment on trips, create personal travel preferences, view packing list and check.
 
 # Tech Guidelines
 - Technologies: React Native + Expo + Expo Router
