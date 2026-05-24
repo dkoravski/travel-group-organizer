@@ -2,10 +2,9 @@
 Travel Group Organizer is an application for organizing group trips, excursions, weekend trips between friends, families or small communities.
 
 # Roles in the App
-- Visitor (anonymous user): can view home page, view public app information, register, login
-- User (authenticated user) can: manage own profile, create travel group, join travel group, view groups where they are member, create trip comments, create personal trip preferences
-- Manager (manager of a travel group) can: create/edit/cancel/delete trips, manage group members, remove members from group, adds registered users with email as members of a given group, moderate comments
-- Admin can: view all users, manage all groups, manage all trips, remove inappropriate content
+- Visitor (anonymous user): can view home page, register, login
+- User (authenticated user) can: manage own profile, create travel group (after creating a group, becomes the group manager), join travel group, review of the groups in which he is a member, create trip comments, create personal trip preferences, marks the packing  list
+- Manager (manager of a travel group) can: create/edit/cancel/delete trips, remove members from group, adds registered users with email as members of a given group
 
 # Technologies
 Modern Next.js + Neon DB + Drizzle ORM + React + Tailwind
