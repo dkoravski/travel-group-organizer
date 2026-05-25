@@ -46,6 +46,13 @@ export default function TripsScreen() {
     }
   }, [token]);
 
+  function openTrip(tripId: number) {
+    router.push({
+      pathname: '/trip-details',
+      params: { id: String(tripId) },
+    });
+  }
+
   useFocusEffect(
     useCallback(() => {
       if (token) {
@@ -111,16 +118,7 @@ export default function TripsScreen() {
           )
         }
         renderItem={({ item }) => (
-          <InteractivePressable
-            feedback="card"
-            style={styles.card}
-            onPress={() =>
-              router.push({
-                pathname: '/trip-details',
-                params: { id: String(item.id) },
-              })
-            }
-          >
+          <View style={styles.card}>
             <View style={styles.cardHeader}>
               <View style={styles.cardTitleBlock}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
@@ -148,7 +146,16 @@ export default function TripsScreen() {
               <Stat value={item.commentsCount} label="коментари" />
               <Stat value={item.preferencesCount} label="предпочитания" />
             </View>
-          </InteractivePressable>
+
+            <InteractivePressable
+              feedback="primary"
+              style={styles.viewTripButton}
+              onPress={() => openTrip(item.id)}
+            >
+              <Text style={styles.viewTripButtonText}>Виж пътуването</Text>
+              <Ionicons name="arrow-forward" size={17} color="#ffffff" />
+            </InteractivePressable>
+          </View>
         )}
       />
       <BottomNav />
@@ -335,5 +342,23 @@ const styles = StyleSheet.create({
     color: '#19212a',
     fontSize: 30,
     fontWeight: '900',
+  },
+  viewTripButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#0f766e',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginTop: 16,
+    minHeight: 42,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  viewTripButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '800',
   },
 });
