@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import { InteractivePressable } from '@/components/InteractivePressable';
 import {
   createTripComment,
   getTripComments,
@@ -270,9 +270,9 @@ export default function TripDetailsScreen() {
       <View style={styles.container}>
         <View style={styles.state}>
           <Text style={styles.error}>{error || 'Пътуването не е намерено.'}</Text>
-          <Pressable style={styles.retryButton} onPress={loadTrip}>
+          <InteractivePressable feedback="primary" style={styles.retryButton} onPress={loadTrip}>
             <Text style={styles.retryText}>Опитай пак</Text>
-          </Pressable>
+          </InteractivePressable>
         </View>
       </View>
     );
@@ -290,13 +290,14 @@ export default function TripDetailsScreen() {
             <View />
           )}
           {trip.isJoined ? (
-            <Pressable
+            <InteractivePressable
               disabled={isSaving}
+              feedback="danger"
               style={[styles.topDangerButton, isSaving && styles.disabledButton]}
               onPress={() => setIsLeaveConfirmVisible(true)}
             >
               <Text style={styles.topDangerButtonText}>Напусни</Text>
-            </Pressable>
+            </InteractivePressable>
           ) : null}
         </View>
         <Text style={styles.title}>{trip.title}</Text>
@@ -328,7 +329,8 @@ export default function TripDetailsScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         {trip.isJoined ? (
-          <Pressable
+          <InteractivePressable
+            feedback="secondary"
             style={styles.secondaryButton}
             onPress={() =>
               router.push({
@@ -338,7 +340,7 @@ export default function TripDetailsScreen() {
             }
           >
             <Text style={styles.secondaryButtonText}>Покажи списък за багаж</Text>
-          </Pressable>
+          </InteractivePressable>
         ) : null}
 
         <View style={styles.actionPanel}>
@@ -347,24 +349,27 @@ export default function TripDetailsScreen() {
             <>
               <Text style={styles.body}>Допълнителни гости към вашето участие.</Text>
               <View style={styles.stepper}>
-                <Pressable
+                <InteractivePressable
                   disabled={isSaving || draftGuestsCount === 0}
+                  feedback="primary"
                   style={[styles.stepperButton, (isSaving || draftGuestsCount === 0) && styles.disabledButton]}
                   onPress={() => setDraftGuestsCount((current) => Math.max(0, current - 1))}
                 >
                   <Text style={styles.stepperButtonText}>-</Text>
-                </Pressable>
+                </InteractivePressable>
                 <Text style={styles.guestsValue}>{draftGuestsCount}</Text>
-                <Pressable
+                <InteractivePressable
                   disabled={isSaving || !canAddDraftGuest}
+                  feedback="primary"
                   style={[styles.stepperButton, (isSaving || !canAddDraftGuest) && styles.disabledButton]}
                   onPress={() => setDraftGuestsCount((current) => current + 1)}
                 >
                   <Text style={styles.stepperButtonText}>+</Text>
-                </Pressable>
+                </InteractivePressable>
               </View>
-              <Pressable
+              <InteractivePressable
                 disabled={isSaving || !hasGuestChanges}
+                feedback="primary"
                 style={[styles.primaryButton, (isSaving || !hasGuestChanges) && styles.disabledButton]}
                 onPress={handleSaveGuests}
               >
@@ -373,13 +378,14 @@ export default function TripDetailsScreen() {
                 ) : (
                   <Text style={styles.primaryButtonText}>Запази гостите</Text>
                 )}
-              </Pressable>
+              </InteractivePressable>
             </>
           ) : (
             <>
               <Text style={styles.body}>Присъединете се към пътуването, за да резервирате места.</Text>
-              <Pressable
+              <InteractivePressable
                 disabled={isSaving || trip.canceled || !canAddDraftGuest}
+                feedback="primary"
                 style={[styles.primaryButton, (isSaving || trip.canceled || !canAddDraftGuest) && styles.disabledButton]}
                 onPress={handleJoin}
               >
@@ -388,7 +394,7 @@ export default function TripDetailsScreen() {
                 ) : (
                   <Text style={styles.primaryButtonText}>Присъедини се</Text>
                 )}
-              </Pressable>
+              </InteractivePressable>
             </>
           )}
         </View>
@@ -407,15 +413,17 @@ export default function TripDetailsScreen() {
                 Вашето участие и резервираните допълнителни гости ще бъдат премахнати.
               </Text>
               <View style={styles.confirmActions}>
-                <Pressable
+                <InteractivePressable
                   disabled={isSaving}
+                  feedback="quiet"
                   style={styles.cancelButton}
                   onPress={() => setIsLeaveConfirmVisible(false)}
                 >
                   <Text style={styles.cancelButtonText}>Отказ</Text>
-                </Pressable>
-                <Pressable
+                </InteractivePressable>
+                <InteractivePressable
                   disabled={isSaving}
+                  feedback="danger"
                   style={[styles.confirmDangerButton, isSaving && styles.disabledButton]}
                   onPress={handleLeave}
                 >
@@ -424,7 +432,7 @@ export default function TripDetailsScreen() {
                   ) : (
                     <Text style={styles.confirmDangerButtonText}>Напусни</Text>
                   )}
-                </Pressable>
+                </InteractivePressable>
               </View>
             </View>
           </View>
@@ -472,8 +480,9 @@ export default function TripDetailsScreen() {
                   value={preferenceNote}
                 />
               </View>
-              <Pressable
+              <InteractivePressable
                 disabled={isPreferencesSaving}
+                feedback="primary"
                 style={[styles.primaryButton, isPreferencesSaving && styles.disabledButton]}
                 onPress={handleSavePreferences}
               >
@@ -482,7 +491,7 @@ export default function TripDetailsScreen() {
                 ) : (
                   <Text style={styles.primaryButtonText}>Запази предпочитанията</Text>
                 )}
-              </Pressable>
+              </InteractivePressable>
             </>
           ) : (
             <Text style={styles.body}>Присъединете се към пътуването, за да добавите предпочитания.</Text>
@@ -531,8 +540,9 @@ export default function TripDetailsScreen() {
             />
           </View>
           <View style={styles.inlineActions}>
-            <Pressable
+            <InteractivePressable
               disabled={isCommentSaving || !commentDraft.trim()}
+              feedback="primary"
               style={[
                 styles.primaryButton,
                 (isCommentSaving || !commentDraft.trim()) && styles.disabledButton,
@@ -546,15 +556,16 @@ export default function TripDetailsScreen() {
                   {editingCommentId ? 'Запази коментара' : 'Добави коментар'}
                 </Text>
               )}
-            </Pressable>
+            </InteractivePressable>
             {editingCommentId ? (
-              <Pressable
+              <InteractivePressable
                 disabled={isCommentSaving}
+                feedback="quiet"
                 style={styles.cancelButton}
                 onPress={handleCancelCommentEdit}
               >
                 <Text style={styles.cancelButtonText}>Отказ</Text>
-              </Pressable>
+              </InteractivePressable>
             ) : null}
           </View>
 
@@ -570,9 +581,9 @@ export default function TripDetailsScreen() {
                   <View style={styles.commentHeader}>
                     <Text style={styles.commentAuthor}>{comment.userName}</Text>
                     {comment.userId === user?.id ? (
-                      <Pressable onPress={() => handleEditComment(comment)}>
+                      <InteractivePressable feedback="text" onPress={() => handleEditComment(comment)}>
                         <Text style={styles.editLink}>Редактирай</Text>
-                      </Pressable>
+                      </InteractivePressable>
                     ) : null}
                   </View>
                   <Text style={styles.commentText}>{comment.content}</Text>

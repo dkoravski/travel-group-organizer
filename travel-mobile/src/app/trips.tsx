@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { BottomNav } from '@/components/BottomNav';
+import { InteractivePressable } from '@/components/InteractivePressable';
 import { getTrips, type TripSummary } from '@/lib/api';
 import { useRequireAuth } from '@/lib/use-require-auth';
 
@@ -95,9 +96,9 @@ export default function TripsScreen() {
               <Ionicons name="warning-outline" size={28} color="#b42318" />
               <Text style={styles.emptyTitle}>Не успяхме да заредим данните</Text>
               <Text style={styles.error}>{error}</Text>
-              <Pressable style={styles.retryButton} onPress={loadTrips}>
+              <InteractivePressable feedback="primary" style={styles.retryButton} onPress={loadTrips}>
                 <Text style={styles.retryText}>Опитай пак</Text>
-              </Pressable>
+              </InteractivePressable>
             </View>
           ) : (
             <View style={styles.emptyState}>
@@ -110,7 +111,8 @@ export default function TripsScreen() {
           )
         }
         renderItem={({ item }) => (
-          <Pressable
+          <InteractivePressable
+            feedback="card"
             style={styles.card}
             onPress={() =>
               router.push({
@@ -146,7 +148,7 @@ export default function TripsScreen() {
               <Stat value={item.commentsCount} label="коментари" />
               <Stat value={item.preferencesCount} label="предпочитания" />
             </View>
-          </Pressable>
+          </InteractivePressable>
         )}
       />
       <BottomNav />

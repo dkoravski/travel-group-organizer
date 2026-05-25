@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BottomNav } from '@/components/BottomNav';
+import { InteractivePressable } from '@/components/InteractivePressable';
 import { login } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
@@ -81,8 +82,9 @@ export default function LoginScreen() {
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Pressable
+          <InteractivePressable
             disabled={isSubmitting}
+            feedback="primary"
             style={[styles.button, isSubmitting && styles.buttonDisabled]}
             onPress={handleLogin}
           >
@@ -94,7 +96,7 @@ export default function LoginScreen() {
                 <Ionicons name="arrow-forward" size={18} color="#ffffff" />
               </>
             )}
-          </Pressable>
+          </InteractivePressable>
         </View>
       </ScrollView>
       <BottomNav />

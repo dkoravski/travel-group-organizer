@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { BottomNav } from '@/components/BottomNav';
+import { InteractivePressable } from '@/components/InteractivePressable';
 import { getGroups, type UserGroup } from '@/lib/api';
 import { useRequireAuth } from '@/lib/use-require-auth';
 
@@ -84,9 +85,9 @@ export default function GroupsScreen() {
             <View style={styles.stateCard}>
               <Ionicons name="warning-outline" size={26} color="#b42318" />
               <Text style={styles.error}>{error}</Text>
-              <Pressable style={styles.retryButton} onPress={loadGroups}>
+              <InteractivePressable feedback="primary" style={styles.retryButton} onPress={loadGroups}>
                 <Text style={styles.retryText}>Опитай пак</Text>
-              </Pressable>
+              </InteractivePressable>
             </View>
           ) : (
             <View style={styles.stateCard}>

@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { InteractivePressable } from '@/components/InteractivePressable';
 import {
   getTripPackingItems,
   updatePackingItemCheck,
@@ -92,10 +93,10 @@ export default function TripPackingScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <InteractivePressable feedback="quiet" style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={20} color="#0f172a" />
           <Text style={styles.backButtonText}>Назад</Text>
-        </Pressable>
+        </InteractivePressable>
 
         <Text style={styles.title}>Списък за багаж</Text>
         <Text style={styles.subtitle}>
@@ -113,9 +114,10 @@ export default function TripPackingScreen() {
       ) : items.length > 0 ? (
         <View style={styles.list}>
           {items.map((item) => (
-            <Pressable
+            <InteractivePressable
               key={item.id}
               disabled={updatingItemId !== null}
+              feedback="card"
               style={styles.item}
               onPress={() => handleToggle(item)}
             >
@@ -132,7 +134,7 @@ export default function TripPackingScreen() {
                   <Text style={styles.itemDescription}>{item.description}</Text>
                 ) : null}
               </View>
-            </Pressable>
+            </InteractivePressable>
           ))}
         </View>
       ) : (

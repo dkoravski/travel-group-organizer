@@ -3,7 +3,6 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 
 import { BottomNav } from '@/components/BottomNav';
+import { InteractivePressable } from '@/components/InteractivePressable';
 import {
   changeProfilePassword,
   getProfile,
@@ -186,8 +186,9 @@ export default function ProfileScreen() {
                       <Ionicons name="mail-outline" size={17} color="#667085" />
                       <Text style={styles.readOnlyText}>{profile?.email || user?.email}</Text>
                     </View>
-                    <Pressable
+                    <InteractivePressable
                       disabled={isNameSaving}
+                      feedback="primary"
                       style={[styles.primaryButton, isNameSaving && styles.disabledButton]}
                       onPress={handleSaveName}
                     >
@@ -196,7 +197,7 @@ export default function ProfileScreen() {
                       ) : (
                         <Text style={styles.primaryButtonText}>Запази</Text>
                       )}
-                    </Pressable>
+                    </InteractivePressable>
                   </View>
                 </View>
               </View>
@@ -234,8 +235,9 @@ export default function ProfileScreen() {
                     value={confirmPassword}
                   />
                 </View>
-                <Pressable
+                <InteractivePressable
                   disabled={isPasswordSaving}
+                  feedback="primary"
                   style={[styles.primaryButton, isPasswordSaving && styles.disabledButton]}
                   onPress={handleChangePassword}
                 >
@@ -244,7 +246,7 @@ export default function ProfileScreen() {
                   ) : (
                     <Text style={styles.primaryButtonText}>Смени</Text>
                   )}
-                </Pressable>
+                </InteractivePressable>
               </View>
             </View>
           </>

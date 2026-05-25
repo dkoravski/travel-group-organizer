@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { BottomNav } from '@/components/BottomNav';
+import { InteractivePressable } from '@/components/InteractivePressable';
 import { useAuth } from '@/lib/auth-context';
 
 const highlights = [
@@ -30,10 +31,10 @@ export default function HomeScreen() {
           {token ? (
             <View style={styles.actions}>
               <Text style={styles.userText}>Влезли сте като {user?.name || user?.email}.</Text>
-              <Pressable style={styles.primaryButton} onPress={() => router.push('/trips')}>
+              <InteractivePressable feedback="primary" style={styles.primaryButton} onPress={() => router.push('/trips')}>
                 <Text style={styles.primaryButtonText}>Моите пътувания</Text>
                 <Ionicons name="arrow-forward" size={17} color="#ffffff" />
-              </Pressable>
+              </InteractivePressable>
             </View>
           ) : null}
 

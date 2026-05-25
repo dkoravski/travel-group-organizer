@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link, router, usePathname } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { InteractivePressable } from '@/components/InteractivePressable';
 import { useAuth } from '@/lib/auth-context';
 
 const publicItems = [
@@ -36,7 +37,7 @@ export function BottomNav() {
 
           return (
             <Link key={item.href} href={item.href} asChild>
-              <Pressable style={styles.item}>
+              <InteractivePressable feedback="nav" style={styles.item}>
                 <View style={[styles.iconWrap, isActive && styles.activeIconWrap]}>
                   <Ionicons
                     name={iconName}
@@ -45,17 +46,17 @@ export function BottomNav() {
                   />
                 </View>
                 <Text style={[styles.label, isActive && styles.activeLabel]}>{item.label}</Text>
-              </Pressable>
+              </InteractivePressable>
             </Link>
           );
         })}
         {token ? (
-          <Pressable style={styles.item} onPress={handleSignOut}>
+          <InteractivePressable feedback="nav" style={styles.item} onPress={handleSignOut}>
             <View style={styles.iconWrap}>
               <Ionicons name="log-out-outline" size={21} color="#b42318" />
             </View>
             <Text style={[styles.label, styles.dangerLabel]}>Изход</Text>
-          </Pressable>
+          </InteractivePressable>
         ) : null}
       </View>
     </View>
