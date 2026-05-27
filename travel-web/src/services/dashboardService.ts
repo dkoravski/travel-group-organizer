@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, asc, count, eq, gte, inArray, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import type { DashboardGroup } from "@/components/DashboardGroupCard";
@@ -26,17 +27,25 @@ export async function getDashboardData(userId: number) {
     return {
       groups: [],
       upcomingTrips: [],
+      searchableTrips: [],
     };
   }
 
-  const [groups, upcomingTrips] = await Promise.all([
+  const [groups, upcomingTrips, searchableTrips] = await Promise.all([
     getDashboardGroups(groupIds, userId),
-    getDashboardTrips(groupIds, today, userId),
+    getDashboardTrips(groupIds, today, userId, {
+      includePastTrips: false,
+      limit: 3,
+    }),
+    getDashboardTrips(groupIds, today, userId, {
+      includePastTrips: true,
+    }),
   ]);
 
   return {
     groups,
     upcomingTrips,
+    searchableTrips,
   };
 }
 
@@ -77,8 +86,24 @@ async function getDashboardTrips(
   groupIds: number[],
   today: string,
   userId: number,
+  {
+    includePastTrips,
+    limit,
+  }: {
+    includePastTrips: boolean;
+    limit?: number;
+  },
 ): Promise<DashboardTrip[]> {
-  const rows = await db
+  const filters: SQL[] = [
+    inArray(trips.groupId, groupIds),
+    eq(trips.canceled, false),
+  ];
+
+  if (!includePastTrips) {
+    filters.push(gte(trips.endDate, today));
+  }
+
+  const query = db
     .select({
       id: trips.id,
       title: trips.title,
@@ -92,26 +117,23 @@ async function getDashboardTrips(
         where user_participation.trip_id = ${trips.id}
           and user_participation.user_id = ${userId}
       )`,
-      status: sql<"upcoming" | "current">`
+      status: sql<"upcoming" | "current" | "past">`
         case
           when ${trips.startDate} <= ${today} and ${trips.endDate} >= ${today}
           then 'current'
+          when ${trips.endDate} < ${today}
+          then 'past'
           else 'upcoming'
         end
       `,
     })
     .from(trips)
     .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
-    .where(
-      and(
-        inArray(trips.groupId, groupIds),
-        eq(trips.canceled, false),
-        gte(trips.endDate, today),
-      ),
-    )
+    .where(and(...filters))
     .groupBy(trips.id)
-    .orderBy(asc(trips.startDate))
-    .limit(3);
+    .orderBy(asc(trips.startDate));
+
+  const rows = await (limit ? query.limit(limit) : query);
 
   return rows.map((row) => ({
     ...row,

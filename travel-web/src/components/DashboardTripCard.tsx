@@ -7,7 +7,7 @@ export type DashboardTrip = {
   startDate: string;
   endDate: string;
   participantsCount: number;
-  status: "upcoming" | "current";
+  status: "upcoming" | "current" | "past";
   isJoined?: boolean;
 };
 
@@ -22,11 +22,18 @@ const dateFormatter = new Intl.DateTimeFormat("bg-BG", {
 });
 
 export function DashboardTripCard({ trip }: DashboardTripCardProps) {
-  const statusLabel = trip.status === "current" ? "В момента" : "Предстоящо";
+  const statusLabel =
+    trip.status === "current"
+      ? "В момента"
+      : trip.status === "past"
+        ? "Минало"
+        : "Предстоящо";
   const statusClass =
     trip.status === "current"
       ? "bg-sky-100 text-sky-800 ring-sky-200"
-      : "bg-emerald-100 text-emerald-800 ring-emerald-200";
+      : trip.status === "past"
+        ? "bg-slate-100 text-slate-700 ring-slate-200"
+        : "bg-emerald-100 text-emerald-800 ring-emerald-200";
 
   return (
     <Link

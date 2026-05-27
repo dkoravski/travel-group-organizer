@@ -69,6 +69,7 @@ export default async function TripPage({ params, searchParams }: TripPageProps) 
       : sourceFrom === "dashboard"
         ? "/dashboard"
         : "/trips";
+  const tripStatus = getTripStatus(trip, new Date().toISOString().slice(0, 10));
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -87,8 +88,10 @@ export default async function TripPage({ params, searchParams }: TripPageProps) 
             <p className="mt-2 text-lg text-slate-600">{trip.destination}</p>
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end">
-            <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
-              {trip.canceled ? "отменено" : "активно"}
+            <span
+              className={`w-fit rounded-full px-3 py-1 text-sm font-semibold ${tripStatus.className}`}
+            >
+              {tripStatus.label}
             </span>
             <p className="text-sm text-slate-600">
               Организатор:{" "}
@@ -441,4 +444,39 @@ function formatCommentDate(date: Date) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(date);
+}
+
+function getTripStatus(
+  trip: {
+    canceled: boolean;
+    endDate: string;
+    startDate: string;
+  },
+  today: string,
+): { className: string; label: string } {
+  if (trip.canceled) {
+    return {
+      className: "bg-red-50 text-red-700",
+      label: "отменено",
+    };
+  }
+
+  if (trip.endDate < today) {
+    return {
+      className: "bg-slate-100 text-slate-700",
+      label: "минало",
+    };
+  }
+
+  if (trip.startDate <= today) {
+    return {
+      className: "bg-sky-100 text-sky-800",
+      label: "в момента",
+    };
+  }
+
+  return {
+    className: "bg-emerald-100 text-emerald-800",
+    label: "предстоящо",
+  };
 }

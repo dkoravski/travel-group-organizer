@@ -13,7 +13,7 @@ export default async function DashboardPage() {
     redirect("/login?redirectTo=/dashboard");
   }
 
-  const [{ groups, upcomingTrips }, hasManagerAccess] = await Promise.all([
+  const [{ groups, upcomingTrips, searchableTrips }, hasManagerAccess] = await Promise.all([
     getDashboardData(currentUser.id),
     userHasManagedGroups(currentUser.id),
   ]);
@@ -27,7 +27,11 @@ export default async function DashboardPage() {
       </header>
 
       <main className="space-y-10">
-        <DashboardSearch groups={groups} upcomingTrips={upcomingTrips} />
+        <DashboardSearch
+          groups={groups}
+          upcomingTrips={upcomingTrips}
+          searchableTrips={searchableTrips}
+        />
 
         <DashboardQuickActions hasManagerAccess={hasManagerAccess} />
       </main>

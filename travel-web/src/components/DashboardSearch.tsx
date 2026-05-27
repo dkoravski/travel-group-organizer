@@ -13,6 +13,7 @@ import {
 
 type DashboardSearchProps = {
   groups: DashboardGroup[];
+  searchableTrips: DashboardTrip[];
   upcomingTrips: DashboardTrip[];
 };
 
@@ -20,6 +21,7 @@ const GROUPS_PER_PAGE = 3;
 
 export function DashboardSearch({
   groups,
+  searchableTrips,
   upcomingTrips,
 }: DashboardSearchProps) {
   const [query, setQuery] = useState("");
@@ -60,20 +62,24 @@ export function DashboardSearch({
       return upcomingTrips;
     }
 
-    return upcomingTrips.filter((trip) =>
+    return searchableTrips.filter((trip) =>
       [
         trip.title,
         trip.destination,
         trip.startDate,
         trip.endDate,
-        trip.status === "current" ? "в момента" : "предстоящо",
+        trip.status === "current"
+          ? "в момента"
+          : trip.status === "past"
+            ? "минало"
+            : "предстоящо",
         trip.isJoined ? "присъединен" : "",
       ]
         .join(" ")
         .toLocaleLowerCase("bg-BG")
         .includes(normalizedQuery),
     );
-  }, [normalizedQuery, upcomingTrips]);
+  }, [normalizedQuery, searchableTrips, upcomingTrips]);
 
   return (
     <>
