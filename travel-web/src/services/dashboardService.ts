@@ -65,8 +65,7 @@ async function getDashboardGroups(
     )
     .where(inArray(travelGroups.id, groupIds))
     .groupBy(travelGroups.id, currentUserMembership.role)
-    .orderBy(asc(travelGroups.name))
-    .limit(3);
+    .orderBy(asc(travelGroups.name));
 
   return rows.map((row) => ({
     ...row,

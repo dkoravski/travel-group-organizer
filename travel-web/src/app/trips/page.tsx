@@ -2,12 +2,20 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { getCurrentUser } from "@/lib/auth";
-import { getAllTrips } from "@/services/tripService";
+import { getTripsPage } from "@/services/tripService";
+
+const TRIPS_PER_PAGE = 3;
+
+function getPositivePage(value?: string) {
+  const page = Number(value);
+
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
 
 export default async function TripsPage({
   searchParams,
 }: {
-  searchParams?: { scope?: string };
+  searchParams?: Promise<{ page?: string; scope?: string }>;
 }) {
   const currentUser = await getCurrentUser();
 
@@ -15,9 +23,21 @@ export default async function TripsPage({
     redirect("/login?redirectTo=/trips");
   }
 
-  const onlyMyGroups = searchParams?.scope !== "all";
+  const params = await searchParams;
+  const onlyMyGroups = params?.scope !== "all";
+  const currentPage = getPositivePage(params?.page);
 
-  const tripRows = await getAllTrips(currentUser.id, onlyMyGroups);
+  const tripsPage = await getTripsPage(currentUser.id, {
+    page: currentPage,
+    pageSize: TRIPS_PER_PAGE,
+    onlyMyGroups,
+  });
+  const tripRows = tripsPage.data;
+  const totalPages = Math.max(1, Math.ceil(tripsPage.total / tripsPage.pageSize));
+
+  if (currentPage > totalPages && tripsPage.total > 0) {
+    redirect(getTripsPageHref(totalPages, onlyMyGroups));
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -111,7 +131,49 @@ export default async function TripsPage({
             ))}
           </div>
         )}
+        {tripsPage.total > TRIPS_PER_PAGE ? (
+          <div className="mt-6 flex flex-col items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm sm:flex-row">
+            <p className="font-medium">
+              Страница {currentPage} от {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Link
+                href={getTripsPageHref(Math.max(1, currentPage - 1), onlyMyGroups)}
+                aria-disabled={currentPage === 1}
+                className="h-10 rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 aria-disabled:pointer-events-none aria-disabled:opacity-50"
+              >
+                Предишна
+              </Link>
+              <Link
+                href={getTripsPageHref(
+                  Math.min(totalPages, currentPage + 1),
+                  onlyMyGroups,
+                )}
+                aria-disabled={currentPage === totalPages}
+                className="h-10 rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 aria-disabled:pointer-events-none aria-disabled:opacity-50"
+              >
+                Следваща
+              </Link>
+            </div>
+          </div>
+        ) : null}
       </main>
     </div>
   );
+}
+
+function getTripsPageHref(page: number, onlyMyGroups: boolean) {
+  const params = new URLSearchParams();
+
+  if (!onlyMyGroups) {
+    params.set("scope", "all");
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+
+  return query ? `/trips?${query}` : "/trips";
 }

@@ -16,11 +16,14 @@ type DashboardSearchProps = {
   upcomingTrips: DashboardTrip[];
 };
 
+const GROUPS_PER_PAGE = 3;
+
 export function DashboardSearch({
   groups,
   upcomingTrips,
 }: DashboardSearchProps) {
   const [query, setQuery] = useState("");
+  const [groupsPage, setGroupsPage] = useState(1);
   const normalizedQuery = query.trim().toLocaleLowerCase("bg-BG");
 
   const filteredGroups = useMemo(() => {
@@ -39,6 +42,18 @@ export function DashboardSearch({
         .includes(normalizedQuery),
     );
   }, [groups, normalizedQuery]);
+
+  const groupsPageCount = Math.max(
+    1,
+    Math.ceil(filteredGroups.length / GROUPS_PER_PAGE),
+  );
+  const currentGroupsPage = Math.min(groupsPage, groupsPageCount);
+
+  const visibleGroups = useMemo(() => {
+    const startIndex = (currentGroupsPage - 1) * GROUPS_PER_PAGE;
+
+    return filteredGroups.slice(startIndex, startIndex + GROUPS_PER_PAGE);
+  }, [currentGroupsPage, filteredGroups]);
 
   const filteredTrips = useMemo(() => {
     if (!normalizedQuery) {
@@ -74,14 +89,20 @@ export function DashboardSearch({
             id="dashboard-search"
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setGroupsPage(1);
+            }}
             placeholder="Име на група, пътуване, дестинация..."
             className="h-11 min-w-0 flex-1 rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
           />
           {query ? (
             <button
               type="button"
-              onClick={() => setQuery("")}
+              onClick={() => {
+                setQuery("");
+                setGroupsPage(1);
+              }}
               className="h-11 rounded-md border border-slate-300 px-4 text-sm font-bold text-slate-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800"
             >
               Изчисти
@@ -104,7 +125,7 @@ export function DashboardSearch({
         />
         {filteredGroups.length > 0 ? (
           <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {filteredGroups.map((group) => (
+            {visibleGroups.map((group) => (
               <DashboardGroupCard
                 key={group.id}
                 group={group}
@@ -121,6 +142,37 @@ export function DashboardSearch({
             }
           />
         )}
+        {filteredGroups.length > GROUPS_PER_PAGE ? (
+          <div className="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 text-sm text-slate-700 shadow-sm shadow-slate-900/5 sm:flex-row">
+            <p className="font-medium">
+              Страница {currentGroupsPage} от {groupsPageCount}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setGroupsPage((currentPage) => Math.max(1, currentPage - 1))
+                }
+                disabled={currentGroupsPage === 1}
+                className="h-10 rounded-md border border-slate-300 px-4 font-bold text-slate-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-300 disabled:hover:bg-transparent disabled:hover:text-slate-700"
+              >
+                Предишна
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setGroupsPage((currentPage) =>
+                    Math.min(groupsPageCount, currentPage + 1),
+                  )
+                }
+                disabled={currentGroupsPage === groupsPageCount}
+                className="h-10 rounded-md border border-slate-300 px-4 font-bold text-slate-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-300 disabled:hover:bg-transparent disabled:hover:text-slate-700"
+              >
+                Следваща
+              </button>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section aria-labelledby="trips-heading">

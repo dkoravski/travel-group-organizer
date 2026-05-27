@@ -140,8 +140,7 @@ export async function getGroupTrips(groupId: number, userId: number) {
     .leftJoin(tripParticipants, eq(tripParticipants.tripId, trips.id))
     .where(eq(trips.groupId, groupId))
     .groupBy(trips.id)
-    .orderBy(asc(trips.startDate))
-    .limit(6);
+    .orderBy(asc(trips.startDate));
 
   return rows.map((row) => ({
     ...row,
