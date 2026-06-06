@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { getCurrentUser } from "@/lib/auth";
+import { isUploadedImageFile, uploadTripCoverImage } from "@/lib/r2";
 import {
   cancelTrip,
   createTripComment,
@@ -73,6 +74,16 @@ function getTripPayload(formData: FormData) {
     capacity,
     estimatedBudget: estimatedBudget || null,
   };
+}
+
+async function getUploadedTripImageUrl(formData: FormData) {
+  const coverImage = formData.get("coverImage");
+
+  if (!isUploadedImageFile(coverImage)) {
+    return null;
+  }
+
+  return uploadTripCoverImage(coverImage);
 }
 
 export async function updateTripPreferencesFormAction(
@@ -244,6 +255,14 @@ export async function createTripAction(
     return { error: "Не можете да създадете пътуване за тази група." };
   }
 
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getUploadedTripImageUrl(formData);
+  } catch (error) {
+    return { error: getActionErrorMessage(error) };
+  }
+
   await createTrip({
     groupId,
     title,
@@ -254,6 +273,7 @@ export async function createTripAction(
     meetingPoint: meetingPoint || null,
     capacity: capacity ? Number(capacity) : null,
     estimatedBudget: estimatedBudget || null,
+    imageUrl,
     createdBy: currentUser.id,
   });
 
@@ -284,7 +304,26 @@ export async function updateTripAction(
     return { error: "Невалидно пътуване." };
   }
 
-  const updated = await updateTrip({ ...payload, tripId }, currentUser.id);
+  const trip = await getTripDetails(tripId, currentUser.id);
+
+  if (!trip?.isGroupManager) {
+    return { error: "Нямате права да редактирате това пътуване." };
+  }
+
+  const shouldRemoveImage = getStringValue(formData, "removeImage") === "true";
+  let imageUrl = shouldRemoveImage ? null : trip.imageUrl;
+
+  try {
+    const uploadedImageUrl = await getUploadedTripImageUrl(formData);
+
+    if (uploadedImageUrl) {
+      imageUrl = uploadedImageUrl;
+    }
+  } catch (error) {
+    return { error: getActionErrorMessage(error) };
+  }
+
+  const updated = await updateTrip({ ...payload, tripId, imageUrl }, currentUser.id);
 
   if (!updated) {
     return { error: "Нямате права да редактирате това пътуване." };

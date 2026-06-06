@@ -127,6 +127,7 @@ export async function getGroupTrips(groupId: number, userId: number) {
       destination: trips.destination,
       startDate: trips.startDate,
       endDate: trips.endDate,
+      imageUrl: trips.imageUrl,
       canceled: trips.canceled,
       participantsCount: count(tripParticipants.id),
       isJoined: sql<boolean>`exists (

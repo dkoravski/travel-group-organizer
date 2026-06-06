@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useActionState, useState } from "react";
+import { ChangeEvent, FormEvent, useActionState, useRef, useState } from "react";
 
 import {
   createTripAction,
@@ -24,6 +24,7 @@ type TripFormValues = {
   meetingPoint?: string | null;
   capacity?: number | null;
   estimatedBudget?: string | null;
+  imageUrl?: string | null;
 };
 
 type TripFormProps = {
@@ -46,7 +47,30 @@ export function TripForm({
   const action = mode === "create" ? createTripAction : updateTripAction;
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [localError, setLocalError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(trip?.imageUrl ?? "");
+  const [removeImage, setRemoveImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const error = localError || state.error;
+
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setPreviewUrl(URL.createObjectURL(file));
+    setRemoveImage(false);
+  }
+
+  function handleRemoveImage() {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    setPreviewUrl("");
+    setRemoveImage(true);
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const formData = new FormData(event.currentTarget);
@@ -70,6 +94,7 @@ export function TripForm({
     >
       {trip?.id ? <input type="hidden" name="tripId" value={trip.id} /> : null}
       {from ? <input type="hidden" name="from" value={from} /> : null}
+      {removeImage ? <input type="hidden" name="removeImage" value="true" /> : null}
 
       <div className="md:col-span-2">
         <label
@@ -164,6 +189,43 @@ export function TripForm({
         step="0.01"
         defaultValue={trip?.estimatedBudget ?? ""}
       />
+
+      <div className="md:col-span-2">
+        <label
+          htmlFor="coverImage"
+          className="block text-sm font-medium text-slate-700"
+        >
+          Корица на пътуването
+        </label>
+        <input
+          ref={fileInputRef}
+          id="coverImage"
+          name="coverImage"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleImageChange}
+          className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-950 file:mr-4 file:rounded-md file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-emerald-800 hover:file:bg-emerald-100 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+        />
+        {previewUrl ? (
+          <div className="mt-4 overflow-hidden rounded-md border border-slate-200 bg-slate-50">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl}
+              alt="Преглед на корицата"
+              className="h-56 w-full object-cover"
+            />
+            <div className="flex justify-end p-3">
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="h-10 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+              >
+                Премахни
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row sm:items-center">
         <button

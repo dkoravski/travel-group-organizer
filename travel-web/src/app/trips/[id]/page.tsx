@@ -80,6 +80,14 @@ export default async function TripPage({ params, searchParams }: TripPageProps) 
       />
 
       <article className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        {trip.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={trip.imageUrl}
+            alt=""
+            className="mb-6 h-72 w-full rounded-md object-cover"
+          />
+        ) : null}
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-950">

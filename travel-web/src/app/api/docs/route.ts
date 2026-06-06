@@ -111,6 +111,22 @@ export function GET() {
       </section>
 
       <section>
+        <h2>Images</h2>
+        <p><span class="method">POST</span> <code>/api/images</code></p>
+        <p>Uploads an authenticated image from multipart form data. Use field name <code>image</code> or <code>file</code>. Returns <code>key</code>, public <code>url</code>, and API <code>viewUrl</code>.</p>
+
+        <p><span class="method">GET</span> <code>/api/images/trip-covers/{fileName}</code></p>
+        <p>Streams a previously uploaded trip cover image by storage key.</p>
+
+        <p><span class="method">DELETE</span> <code>/api/images/trip-covers/{fileName}</code></p>
+        <p>Removes an authenticated image by storage key.</p>
+
+        <p><span class="method">DELETE</span> <code>/api/images</code></p>
+        <pre>{ "key": "trip-covers/example.webp" }</pre>
+        <p>Also accepts <code>{ "url": "..." }</code> for deleting by returned public URL.</p>
+      </section>
+
+      <section>
         <h2>Participation</h2>
         <p><span class="method">POST</span> <code>/api/trips/{id}/join</code></p>
         <pre>{ "guestsCount": 0 }</pre>

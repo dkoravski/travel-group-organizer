@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -300,6 +301,14 @@ export default function TripDetailsScreen() {
             </InteractivePressable>
           ) : null}
         </View>
+        {trip.imageUrl ? (
+          <Image
+            accessibilityLabel={`Снимка за ${trip.title}`}
+            contentFit="cover"
+            source={{ uri: trip.imageUrl }}
+            style={styles.heroImage}
+          />
+        ) : null}
         <Text style={styles.title}>{trip.title}</Text>
         <Text style={styles.subtitle}>{trip.destination}</Text>
         <Text style={styles.meta}>{formatDateRange(trip.startDate, trip.endDate)}</Text>
@@ -758,6 +767,13 @@ const styles = StyleSheet.create({
   field: {
     gap: 8,
     marginTop: 16,
+  },
+  heroImage: {
+    aspectRatio: 16 / 9,
+    backgroundColor: '#eef2f6',
+    borderRadius: 8,
+    marginBottom: 18,
+    width: '100%',
   },
   guestsValue: {
     color: '#19212a',

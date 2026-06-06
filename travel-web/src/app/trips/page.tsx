@@ -147,6 +147,14 @@ function TripCard({ trip, today }: TripCardProps) {
 
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      {trip.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={trip.imageUrl}
+          alt=""
+          className="mb-4 h-36 w-full rounded-md object-cover"
+        />
+      ) : null}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-950">{trip.title}</h2>

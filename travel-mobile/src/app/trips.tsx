@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
@@ -119,6 +120,15 @@ export default function TripsScreen() {
         }
         renderItem={({ item }) => (
           <View style={styles.card}>
+            {item.imageUrl ? (
+              <Image
+                accessibilityLabel={`Снимка за ${item.title}`}
+                contentFit="cover"
+                source={{ uri: item.imageUrl }}
+                style={styles.tripImage}
+              />
+            ) : null}
+
             <View style={styles.cardHeader}>
               <View style={styles.cardTitleBlock}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
@@ -342,6 +352,13 @@ const styles = StyleSheet.create({
     color: '#19212a',
     fontSize: 30,
     fontWeight: '900',
+  },
+  tripImage: {
+    aspectRatio: 16 / 9,
+    backgroundColor: '#eef2f6',
+    borderRadius: 8,
+    marginBottom: 14,
+    width: '100%',
   },
   viewTripButton: {
     alignItems: 'center',

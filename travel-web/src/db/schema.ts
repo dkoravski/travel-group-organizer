@@ -129,6 +129,7 @@ export const trips = pgTable(
       precision: 10,
       scale: 2,
     }),
+    imageUrl: text("image_url"),
     canceled: boolean("canceled").default(false).notNull(),
     createdBy: integer("created_by")
       .notNull()

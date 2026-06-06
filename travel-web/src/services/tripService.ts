@@ -24,6 +24,7 @@ type CreateTripInput = {
   meetingPoint?: string | null;
   capacity?: number | null;
   estimatedBudget?: string | null;
+  imageUrl?: string | null;
   createdBy: number;
 };
 
@@ -41,6 +42,7 @@ export async function getNearestPublicUpcomingTrip() {
       destination: trips.destination,
       startDate: trips.startDate,
       endDate: trips.endDate,
+      imageUrl: trips.imageUrl,
       estimatedBudget: trips.estimatedBudget,
       capacity: trips.capacity,
       groupName: travelGroups.name,
@@ -115,6 +117,7 @@ export async function createTrip(input: CreateTripInput) {
     meetingPoint: input.meetingPoint || null,
     capacity: input.capacity ?? null,
     estimatedBudget: input.estimatedBudget || null,
+    imageUrl: input.imageUrl || null,
     createdBy: input.createdBy,
   }).returning({ id: trips.id });
 
@@ -134,6 +137,7 @@ export async function updateTrip(input: UpdateTripInput, userId: number) {
       meetingPoint: input.meetingPoint || null,
       capacity: input.capacity ?? null,
       estimatedBudget: input.estimatedBudget || null,
+      imageUrl: input.imageUrl ?? null,
       canceled: false,
       updatedAt: new Date(),
     })
@@ -169,6 +173,7 @@ export async function getAllTrips(userId: number, onlyMyGroups = true) {
       destination: trips.destination,
       startDate: trips.startDate,
       endDate: trips.endDate,
+      imageUrl: trips.imageUrl,
       canceled: trips.canceled,
       createdBy: trips.createdBy,
       groupName: travelGroups.name,
@@ -226,6 +231,7 @@ export async function getManagedTrips(userId: number) {
       destination: trips.destination,
       startDate: trips.startDate,
       endDate: trips.endDate,
+      imageUrl: trips.imageUrl,
       canceled: trips.canceled,
       groupName: travelGroups.name,
       packingItemsCount: sql<number>`(
@@ -276,6 +282,7 @@ export async function getTripsPage(
       destination: trips.destination,
       startDate: trips.startDate,
       endDate: trips.endDate,
+      imageUrl: trips.imageUrl,
       canceled: trips.canceled,
       groupName: travelGroups.name,
       participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
@@ -350,6 +357,7 @@ export async function getTripDetails(tripId: number, userId: number) {
       meetingPoint: trips.meetingPoint,
       capacity: trips.capacity,
       estimatedBudget: trips.estimatedBudget,
+      imageUrl: trips.imageUrl,
       canceled: trips.canceled,
       createdBy: trips.createdBy,
       createdAt: trips.createdAt,

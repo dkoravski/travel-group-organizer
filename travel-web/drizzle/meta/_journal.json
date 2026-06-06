@@ -22,6 +22,13 @@
       "when": 1779481727379,
       "tag": "0002_cool_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780736354941,
+      "tag": "0003_sticky_rockslide",
+      "breakpoints": true
     }
   ]
 }

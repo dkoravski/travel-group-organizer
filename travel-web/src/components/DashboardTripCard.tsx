@@ -6,6 +6,7 @@ export type DashboardTrip = {
   destination: string;
   startDate: string;
   endDate: string;
+  imageUrl?: string | null;
   participantsCount: number;
   status: "upcoming" | "current" | "past";
   isJoined?: boolean;
@@ -41,6 +42,14 @@ export function DashboardTripCard({ trip }: DashboardTripCardProps) {
       aria-label={`Отвори пътуване ${trip.title}`}
       className="group block rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl hover:shadow-slate-900/10 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
     >
+      {trip.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={trip.imageUrl}
+          alt=""
+          className="mb-4 h-32 w-full rounded-lg object-cover"
+        />
+      ) : null}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-slate-950 transition group-hover:text-emerald-800">

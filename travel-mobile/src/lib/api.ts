@@ -28,6 +28,7 @@ export type TripSummary = {
   destination: string;
   startDate: string;
   endDate: string;
+  imageUrl: string | null;
   canceled: boolean;
   groupName: string;
   participantsCount: number;

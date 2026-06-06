@@ -110,6 +110,7 @@ async function getDashboardTrips(
       destination: trips.destination,
       startDate: trips.startDate,
       endDate: trips.endDate,
+      imageUrl: trips.imageUrl,
       participantsCount: sql<number>`coalesce(sum(coalesce(${tripParticipants.guestsCount}, 0) + 1), 0)`,
       isJoined: sql<boolean>`exists (
         select 1
