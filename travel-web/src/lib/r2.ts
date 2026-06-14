@@ -18,13 +18,32 @@ export const ALLOWED_IMAGE_TYPES = new Set([
 ]);
 export const TRIP_COVER_IMAGE_PREFIX = "trip-covers/";
 
+const R2_ENDPOINT_ENV_NAMES = ["R2_URL", "R2_ENDPOINT", "R2_ENDPOINT_URL"];
+const R2_PUBLIC_URL_ENV_NAMES = [
+  "R2_PUBLIC_URL",
+  "R2_PUBLIC_ENDPOINT",
+  "R2_PUBLIC_URL_BASE",
+];
+
 let r2Client: S3Client | null = null;
 
-function getRequiredEnv(name: string) {
-  const value = process.env[name];
+function getOptionalEnv(...names: string[]) {
+  for (const name of names) {
+    const value = process.env[name];
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function getRequiredEnv(...names: string[]) {
+  const value = getOptionalEnv(...names);
 
   if (!value) {
-    throw new Error(`${name} is not set`);
+    throw new Error(`${names.join(" or ")} is not set`);
   }
 
   return value;
@@ -34,7 +53,7 @@ function getR2Client() {
   if (!r2Client) {
     r2Client = new S3Client({
       region: "auto",
-      endpoint: getRequiredEnv("R2_URL"),
+      endpoint: getRequiredEnv(...R2_ENDPOINT_ENV_NAMES),
       credentials: {
         accessKeyId: getRequiredEnv("R2_ACCESS_KEY_ID"),
         secretAccessKey: getRequiredEnv("R2_SECRET_ACCESS_KEY"),
@@ -71,7 +90,7 @@ function getBucket() {
 }
 
 function getPublicUrl() {
-  return getRequiredEnv("R2_PUBLIC_URL").replace(/\/$/, "");
+  return getOptionalEnv(...R2_PUBLIC_URL_ENV_NAMES)?.replace(/\/$/, "") ?? null;
 }
 
 function assertAppImageKey(key: string) {
@@ -90,13 +109,33 @@ export function isUploadedImageFile(value: FormDataEntryValue | null): value is 
 }
 
 export function getImageKeyFromUrl(url: string) {
-  const publicUrl = `${getPublicUrl()}/`;
+  const publicUrl = getPublicUrl();
 
-  if (url.startsWith(publicUrl)) {
-    return decodeURIComponent(url.slice(publicUrl.length));
+  if (publicUrl && url.startsWith(`${publicUrl}/`)) {
+    return decodeURIComponent(url.slice(publicUrl.length + 1));
+  }
+
+  try {
+    const parsedUrl = new URL(url, "http://localhost");
+
+    if (parsedUrl.pathname.startsWith("/api/images/")) {
+      return decodeURIComponent(parsedUrl.pathname.slice("/api/images/".length));
+    }
+  } catch {
+    // Ignore invalid URLs and fall back to the original value.
   }
 
   return url;
+}
+
+function getTripCoverImageUrl(key: string) {
+  const publicUrl = getPublicUrl();
+
+  if (publicUrl) {
+    return `${publicUrl}/${key}`;
+  }
+
+  return getApiImageUrl(key);
 }
 
 export function getApiImageUrl(key: string) {
@@ -127,7 +166,7 @@ export async function uploadTripCoverImageObject(file: File) {
 
   return {
     key,
-    url: `${getPublicUrl()}/${key}`,
+    url: getTripCoverImageUrl(key),
     viewUrl: getApiImageUrl(key),
     contentType: file.type,
     size: file.size,

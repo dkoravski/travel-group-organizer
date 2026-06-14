@@ -21,3 +21,6 @@ Use a client-server architecture:
 - Implement modern UI, responcive design, use server-rendered components in Next.js
 - Use server-side rendering, only use client components for browser interactions and forms
 - Use Bulgarian language for UI
+
+# Database migration
+If you need to modify the database, follow the standart Drizzle workflow: change drizle schema file --> generate migration --> migrate to neon DB
