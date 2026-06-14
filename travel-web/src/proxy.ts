@@ -11,13 +11,19 @@ function getJwtSecretKey() {
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
-    throw new Error("JWT_SECRET is not set");
+    return null;
   }
 
   return new TextEncoder().encode(secret);
 }
 
 async function hasValidSession(request: NextRequest) {
+  const secretKey = getJwtSecretKey();
+
+  if (!secretKey) {
+    return false;
+  }
+
   const token = request.cookies.get(sessionCookieName)?.value;
 
   if (!token) {
@@ -25,7 +31,7 @@ async function hasValidSession(request: NextRequest) {
   }
 
   try {
-    await jwtVerify(token, getJwtSecretKey());
+    await jwtVerify(token, secretKey);
     return true;
   } catch {
     return false;

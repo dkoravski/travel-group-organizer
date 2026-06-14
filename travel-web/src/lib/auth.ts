@@ -28,7 +28,7 @@ function getJwtSecretKey() {
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
-    throw new Error("JWT_SECRET is not set");
+    return null;
   }
 
   return new TextEncoder().encode(secret);
@@ -43,6 +43,12 @@ export async function verifyPassword(password: string, passwordHash: string) {
 }
 
 export async function createAuthToken(user: SessionPayload) {
+  const secretKey = getJwtSecretKey();
+
+  if (!secretKey) {
+    throw new Error("JWT_SECRET is not set");
+  }
+
   return new SignJWT({
     userId: user.userId,
     email: user.email,
@@ -52,12 +58,18 @@ export async function createAuthToken(user: SessionPayload) {
     .setSubject(String(user.userId))
     .setIssuedAt()
     .setExpirationTime(`${sessionDurationSeconds}s`)
-    .sign(getJwtSecretKey());
+    .sign(secretKey);
 }
 
 export async function verifyAuthToken(token: string) {
+  const secretKey = getJwtSecretKey();
+
+  if (!secretKey) {
+    return null;
+  }
+
   try {
-    const { payload } = await jwtVerify(token, getJwtSecretKey());
+    const { payload } = await jwtVerify(token, secretKey);
 
     if (
       typeof payload.userId !== "number" ||

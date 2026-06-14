@@ -1,11 +1,8 @@
 [build]
-  base = "travel-web"
+  base = "travel-mobile"
   command = "npm run build"
-  publish = ".next"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "22"
   NPM_FLAGS = "--include=optional"
-
-[[plugins]]
-package = "@netlify/plugin-nextjs"
