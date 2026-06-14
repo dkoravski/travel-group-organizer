@@ -50,13 +50,13 @@ describe("r2 helpers", () => {
     restoreEnv();
   });
 
-  it("uses endpoint aliases and falls back to the API image route", async () => {
+  it("uses endpoint aliases and a configured public URL", async () => {
     delete process.env.R2_URL;
     process.env.R2_ENDPOINT = "https://example.r2.cloudflarestorage.com";
     process.env.R2_ACCESS_KEY_ID = "access-key";
     process.env.R2_SECRET_ACCESS_KEY = "secret-key";
     process.env.R2_BUCKET = "travel-group-organizer";
-    delete process.env.R2_PUBLIC_URL;
+    process.env.R2_PUBLIC_URL = "https://pub.example/";
 
     mockSend.mockResolvedValueOnce({});
 
@@ -71,7 +71,7 @@ describe("r2 helpers", () => {
         endpoint: "https://example.r2.cloudflarestorage.com",
       }),
     );
-    expect(image.url).toMatch(/^\/api\/images\/trip-covers\/.+\.webp$/);
+    expect(image.url).toMatch(/^https:\/\/pub\.example\/trip-covers\/.+\.webp$/);
     expect(image.viewUrl).toMatch(/^\/api\/images\/trip-covers\/.+\.webp$/);
     expect(getImageKeyFromUrl(image.url)).toMatch(
       /^trip-covers\/.+\.webp$/,

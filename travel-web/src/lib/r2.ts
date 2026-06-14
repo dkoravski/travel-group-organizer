@@ -129,13 +129,7 @@ export function getImageKeyFromUrl(url: string) {
 }
 
 function getTripCoverImageUrl(key: string) {
-  const publicUrl = getPublicUrl();
-
-  if (publicUrl) {
-    return `${publicUrl}/${key}`;
-  }
-
-  return getApiImageUrl(key);
+  return `${getPublicUrl()}/${key}`;
 }
 
 export function getApiImageUrl(key: string) {
