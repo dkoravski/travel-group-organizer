@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { apiError, apiOk } from "@/lib/api/responses";
-import { createAuthToken, hashPassword } from "@/lib/auth";
+import { createAuthToken, hashPassword, setSessionCookie } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     name: createdUser.name,
   });
 
-  return apiOk(
+  const response = apiOk(
     {
       token,
       tokenType: "Bearer",
@@ -84,4 +84,6 @@ export async function POST(request: NextRequest) {
     },
     201,
   );
+
+  return setSessionCookie(response, token);
 }

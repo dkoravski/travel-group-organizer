@@ -1,20 +1,57 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { registerAction, type AuthActionState } from "@/app/(auth)/actions";
-
-const initialAuthState: AuthActionState = {};
+type AuthApiResponse = {
+  error?: string;
+};
 
 export function RegisterForm() {
-  const [state, formAction] = useActionState(registerAction, initialAuthState);
+  const router = useRouter();
+  const [error, setError] = useState<string>();
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    setError(undefined);
+    setPending(true);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          name: String(formData.get("name") ?? ""),
+          email: String(formData.get("email") ?? ""),
+          password: String(formData.get("password") ?? ""),
+        }),
+      });
+
+      const result = (await response.json()) as AuthApiResponse;
+
+      if (!response.ok) {
+        setError(result.error ?? "Регистрацията не беше успешна.");
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch {
+      setError("Регистрацията не беше успешна.");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={formAction} className="space-y-5">
-      {state.error ? (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {state.error}
+          {error}
         </p>
       ) : null}
 
@@ -73,14 +110,12 @@ export function RegisterForm() {
         />
       </div>
 
-      <RegisterSubmitButton />
+      <RegisterSubmitButton pending={pending} />
     </form>
   );
 }
 
-function RegisterSubmitButton() {
-  const { pending } = useFormStatus();
-
+function RegisterSubmitButton({ pending }: { pending: boolean }) {
   return (
     <button
       type="submit"

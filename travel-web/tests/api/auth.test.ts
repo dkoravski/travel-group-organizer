@@ -12,6 +12,7 @@ jest.mock("@/db", () => ({
 
 jest.mock("@/lib/auth", () => ({
   createAuthToken: jest.fn(),
+  setSessionCookie: jest.fn((response) => response),
   verifyPassword: jest.fn(),
 }));
 

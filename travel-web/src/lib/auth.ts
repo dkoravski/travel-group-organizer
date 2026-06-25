@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -23,6 +24,16 @@ export type CurrentUser = {
   email: string;
   avatarUrl: string | null;
 };
+
+function getSessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: sessionDurationSeconds,
+  };
+}
 
 function getJwtSecretKey() {
   const secret = process.env.JWT_SECRET;
@@ -94,13 +105,12 @@ export async function createSession(user: SessionPayload) {
 
   const cookieStore = await cookies();
 
-  cookieStore.set(sessionCookieName, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: sessionDurationSeconds,
-  });
+  cookieStore.set(sessionCookieName, token, getSessionCookieOptions());
+}
+
+export function setSessionCookie(response: NextResponse, token: string) {
+  response.cookies.set(sessionCookieName, token, getSessionCookieOptions());
+  return response;
 }
 
 export async function clearSession() {
