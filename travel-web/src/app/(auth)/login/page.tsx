@@ -10,7 +10,7 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
-  const redirectTo = params?.redirectTo ?? "/";
+  const redirectTo = params?.redirectTo ?? "/dashboard";
 
   return (
     <section className="mx-auto flex min-h-[calc(100vh-145px)] w-full max-w-md flex-col justify-center px-4 py-12 sm:px-6">
