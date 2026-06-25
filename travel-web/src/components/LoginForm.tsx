@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 type AuthApiResponse = {
   error?: string;
@@ -24,7 +23,6 @@ function getSafeRedirectPath(redirectTo: string) {
 }
 
 export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
-  const router = useRouter();
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
 
@@ -53,8 +51,7 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
         return;
       }
 
-      router.push(getSafeRedirectPath(redirectTo));
-      router.refresh();
+      window.location.assign(getSafeRedirectPath(redirectTo));
     } catch {
       setError("Входът не беше успешен.");
     } finally {

@@ -1,14 +1,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 type AuthApiResponse = {
   error?: string;
 };
 
 export function RegisterForm() {
-  const router = useRouter();
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
 
@@ -38,8 +36,7 @@ export function RegisterForm() {
         return;
       }
 
-      router.push("/");
-      router.refresh();
+      window.location.assign("/");
     } catch {
       setError("Регистрацията не беше успешна.");
     } finally {
