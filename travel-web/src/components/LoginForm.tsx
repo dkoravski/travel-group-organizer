@@ -22,7 +22,7 @@ function getSafeRedirectPath(redirectTo: string) {
   return redirectTo;
 }
 
-export function LoginForm({ redirectTo = "/dashboard" }: LoginFormProps) {
+export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
 

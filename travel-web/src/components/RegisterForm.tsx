@@ -36,7 +36,7 @@ export function RegisterForm() {
         return;
       }
 
-      window.location.assign("/dashboard");
+      window.location.assign("/");
     } catch {
       setError("Регистрацията не беше успешна.");
     } finally {
