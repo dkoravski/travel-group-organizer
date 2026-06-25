@@ -5,7 +5,6 @@ import { sessionCookieName } from "@/lib/auth-constants";
 import { apiCorsHeaders, applyApiCorsHeaders } from "@/lib/api/cors";
 
 const publicRoutes = new Set(["/", "/about", "/login", "/register"]);
-const authRoutes = new Set(["/login", "/register"]);
 
 function getJwtSecretKey() {
   const secret = process.env.JWT_SECRET;
@@ -58,10 +57,6 @@ export async function proxy(request: NextRequest) {
   const isAuthenticated = await hasValidSession(request);
 
   if (isPublicRoute) {
-    if (isAuthenticated && authRoutes.has(pathname)) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
     return NextResponse.next();
   }
 
